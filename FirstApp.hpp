@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LittleVulkanEngineWindow.hpp"
+#include "LittleVulkanEnginePipeline.hpp"
 
 namespace LittleVulkanEngine {
 	class FirstApp {
@@ -12,5 +13,6 @@ namespace LittleVulkanEngine {
 
 	private:
 		LveWindow lveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
+		LvePipeline lvePipeline{ "shaders/SimpleShader.vert.spv", "shaders/SimpleShader.frag.spv" };
 	};
 } // namespace LittleVulkanEngine
