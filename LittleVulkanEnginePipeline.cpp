@@ -118,6 +118,10 @@ namespace LittleVulkanEngine {
 		}
 	}
 
+	void LvePipeline::bind(VkCommandBuffer commandBuffer) {
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	}
+
 	void LvePipeline::defaultPipelineConfigInfo(
 		PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
 
