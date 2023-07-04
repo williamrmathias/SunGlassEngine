@@ -4,6 +4,7 @@
 #include "LittleVulkanEnginePipeline.hpp"
 #include "LittleVulkanEngineSwapChain.hpp"
 #include "LittleVulkanEngineWindow.hpp"
+#include "LittleVulkanEngineModel.hpp"
 
 // std
 #include <memory>
@@ -24,6 +25,7 @@ namespace LittleVulkanEngine {
 		void run();
 
 	private:
+		void loadModels();
 		void createPipelineLayout();
 		void createPipeline();
 		void createCommandBuffers();
@@ -35,5 +37,6 @@ namespace LittleVulkanEngine {
 		std::unique_ptr<LvePipeline> lvePipeline;
 		VkPipelineLayout pipelineLayout;
 		std::vector<VkCommandBuffer> commandBuffers;
+		std::unique_ptr<LveModel> lveModel;
 	};
 } // namespace LittleVulkanEngine
