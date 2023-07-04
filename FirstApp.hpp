@@ -2,6 +2,7 @@
 
 #include "LittleVulkanEngineWindow.hpp"
 #include "LittleVulkanEnginePipeline.hpp"
+#include "LittleVulkanEngineDevice.hpp"
 
 namespace LittleVulkanEngine {
 	class FirstApp {
@@ -13,6 +14,12 @@ namespace LittleVulkanEngine {
 
 	private:
 		LveWindow lveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
-		LvePipeline lvePipeline{ "shaders/SimpleShader.vert.spv", "shaders/SimpleShader.frag.spv" };
+		LveDevice lveDevice{ lveWindow };
+		LvePipeline lvePipeline{
+			lveDevice,
+			"shaders/SimpleShader.vert.spv",
+			"shaders/SimpleShader.frag.spv",
+			LvePipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)
+		};
 	};
 } // namespace LittleVulkanEngine
