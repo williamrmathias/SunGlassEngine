@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace LittleVulkanEngine {
 
@@ -16,10 +17,14 @@ class LveSwapChain {
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   LveSwapChain(LveDevice &deviceRef, VkExtent2D windowExtent);
+  LveSwapChain(
+      LveDevice& deviceRef,
+      VkExtent2D windowExtent,
+      std::shared_ptr<LveSwapChain> previousSwapChain);
   ~LveSwapChain();
 
   LveSwapChain(const LveSwapChain&) = delete;
-  void operator=(const LveSwapChain&) = delete;
+  LveSwapChain& operator=(const LveSwapChain&) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -39,12 +44,13 @@ class LveSwapChain {
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
  private:
-  void createSwapChain();
-  void createImageViews();
-  void createDepthResources();
-  void createRenderPass();
-  void createFramebuffers();
-  void createSyncObjects();
+     void init();
+     void createSwapChain();
+     void createImageViews();
+     void createDepthResources();
+     void createRenderPass();
+     void createFramebuffers();
+     void createSyncObjects();
 
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -69,6 +75,7 @@ class LveSwapChain {
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
+  std::shared_ptr<LveSwapChain> oldSwapChain;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
