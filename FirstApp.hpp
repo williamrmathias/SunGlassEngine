@@ -1,10 +1,11 @@
 #pragma once
 
 #include "LittleVulkanEngineDevice.hpp"
+#include "LittleVulkanEngineModel.hpp"
+#include "LittleVulkanEngineGameObject.hpp"
 #include "LittleVulkanEnginePipeline.hpp"
 #include "LittleVulkanEngineSwapChain.hpp"
 #include "LittleVulkanEngineWindow.hpp"
-#include "LittleVulkanEngineModel.hpp"
 
 // std
 #include <memory>
@@ -25,7 +26,7 @@ namespace LittleVulkanEngine {
 		void run();
 
 	private:
-		void loadModels();
+		void loadGameObjects();
 		void createPipelineLayout();
 		void createPipeline();
 		void createCommandBuffers();
@@ -33,6 +34,7 @@ namespace LittleVulkanEngine {
 		void drawFrame();
 		void recreateSwapChain();
 		void recordCommandBuffer(int imageIndex);
+		void renderGameObjects(VkCommandBuffer commandBuffer);
 
 		LveWindow lveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		LveDevice lveDevice{ lveWindow };
@@ -40,6 +42,6 @@ namespace LittleVulkanEngine {
 		std::unique_ptr<LvePipeline> lvePipeline;
 		VkPipelineLayout pipelineLayout;
 		std::vector<VkCommandBuffer> commandBuffers;
-		std::unique_ptr<LveModel> lveModel;
+		std::vector<LveGameObject> gameObjects;
 	};
 } // namespace LittleVulkanEngine
