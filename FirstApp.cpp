@@ -38,35 +38,72 @@ namespace LittleVulkanEngine {
 		vkDeviceWaitIdle(lveDevice.device());
 	}
 
-	void FirstApp::loadGameObjects() {
+	// temporary helper function, creates a 1x1x1 cube centered at offset
+	std::unique_ptr<LveModel> createCubeModel(LveDevice& device, glm::vec3 offset) {
 		std::vector<LveModel::Vertex> vertices{
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+
+			// left face (white)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+			// right face (yellow)
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+			// top face (orange, remember y axis points down)
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+			// bottom face (red)
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+			// nose face (blue)
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+			// tail face (green)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+
 		};
-
-		auto lveModel = std::make_shared<LveModel>(lveDevice, vertices);
-
-		// https://www.color-hex.com/color-palette/5361
-		std::vector<glm::vec3> colors{
-			{1.f, .7f, .73f},
-			{1.f, .87f, .73f},
-			{1.f, 1.f, .73f},
-			{.73f, 1.f, .8f},
-			{.73, .88f, 1.f}
-		};
-
-		for (auto& color : colors) {
-			color = glm::pow(color, glm::vec3{ 2.2f });
+		for (auto& v : vertices) {
+			v.position += offset;
 		}
+		return std::make_unique<LveModel>(device, vertices);
+	}
 
-		for (int i = 0; i < 40; i++) {
-			auto triangle = LveGameObject::createGameObject();
-			triangle.model = lveModel;
-			triangle.transform2d.scale = glm::vec2(0.5f) + i * 0.025f;
-			triangle.transform2d.rotation = i * glm::pi<float>() * 0.025f;
-			triangle.color = colors[i % colors.size()];
-			gameObjects.push_back(std::move(triangle));
-		}
+	void FirstApp::loadGameObjects() {
+		std::shared_ptr<LveModel> lveModel = createCubeModel(lveDevice, { 0.f, 0.f, 0.f });
+
+		auto cube = LveGameObject::createGameObject();
+		cube.model = lveModel;
+		cube.transform.translation = { 0.f, 0.f, 0.5f };
+		cube.transform.scale = { 0.5f, 0.5f, 0.5f };
+		gameObjects.push_back(std::move(cube));
 	}
 } // namespace LittleVulkanEngine
