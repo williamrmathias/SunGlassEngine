@@ -198,6 +198,7 @@ namespace LittleVulkanEngine {
 			|| lveWindow.wasWindowResized()) {
 			lveWindow.resetWindowResizedFlag();
 			recreateSwapChain();
+			return;
 		}
 
 		if (result != VK_SUCCESS) {
