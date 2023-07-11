@@ -21,6 +21,8 @@ namespace LittleVulkanEngine {
 
 		VkRenderPass getSwapChainRenderPass() const { return lveSwapChain->getRenderPass(); }
 
+		float getAspectRatio() const { return lveSwapChain->extentAspectRatio(); }
+
 		bool isFrameInProgress() const { return isFrameStarted; }
 
 		VkCommandBuffer getCurrentCommandBuffer() const {

@@ -66,7 +66,10 @@ namespace LittleVulkanEngine {
 			pipelineConfig);
 	}
 
-	void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<LveGameObject>& gameObjects) {
+	void SimpleRenderSystem::renderGameObjects(
+		VkCommandBuffer commandBuffer,
+		std::vector<LveGameObject>& gameObjects,
+		const LveCamera& camera) {
 
 		// update
 		int i = 0;
@@ -82,11 +85,13 @@ namespace LittleVulkanEngine {
 		// render
 		lvePipeline->bind(commandBuffer);
 
+		auto projectionView = camera.getProjection() * camera.getView();
+
 		for (auto& obj : gameObjects) {
 
 			SimplePushConstantData push{};
 			push.color = obj.color;
-			push.transform = obj.transform.mat4();
+			push.transform = projectionView * obj.transform.mat4();
 
 			vkCmdPushConstants(
 				commandBuffer,

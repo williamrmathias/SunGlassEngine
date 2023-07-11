@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LittleVulkanEngineCamera.hpp"
 #include "LittleVulkanEngineDevice.hpp"
 #include "LittleVulkanEngineGameObject.hpp"
 #include "LittleVulkanEnginePipeline.hpp"
@@ -18,7 +19,11 @@ namespace LittleVulkanEngine {
 		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
 		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-		void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<LveGameObject>& gameObjects);
+		void renderGameObjects(
+			VkCommandBuffer commandBuffer,
+			std::vector<LveGameObject>& gameObjects,
+			const LveCamera& camera
+		);
 
 	private:
 		void createPipelineLayout();
