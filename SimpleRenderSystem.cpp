@@ -71,17 +71,6 @@ namespace LittleVulkanEngine {
 		std::vector<LveGameObject>& gameObjects,
 		const LveCamera& camera) {
 
-		// update
-		int i = 0;
-
-		for (auto& obj : gameObjects) {
-			i += 1;
-			obj.transform.rotation.y = glm::mod<float>(
-				obj.transform.rotation.y + 0.001f * i, glm::two_pi<float>());
-			obj.transform.rotation.x = glm::mod<float>(
-				obj.transform.rotation.y + 0.0005f * i, glm::two_pi<float>());
-		}
-
 		// render
 		lvePipeline->bind(commandBuffer);
 
