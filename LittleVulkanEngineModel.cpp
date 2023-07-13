@@ -1,8 +1,29 @@
 #include "LittleVulkanEngineModel.hpp"
+#include "LittleVulkanEngineUtils.hpp"
+
+// libs
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <TinyObjectLoader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 // std
 #include <cassert>
 #include <cstring>
+#include <unordered_map>
+
+namespace std {
+
+	template <>
+	struct hash<LittleVulkanEngine::LveModel::Vertex> {
+		size_t operator()(LittleVulkanEngine::LveModel::Vertex const& vertex) const {
+			size_t seed = 0;
+			LittleVulkanEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+			return seed;
+		}
+	};
+
+}
 
 namespace LittleVulkanEngine {
 	
@@ -20,6 +41,13 @@ namespace LittleVulkanEngine {
 			vkDestroyBuffer(lveDevice.device(), indexBuffer, nullptr);
 			vkFreeMemory(lveDevice.device(), indexBufferMemory, nullptr);
 		}
+	}
+
+	std::unique_ptr<LveModel> LveModel::createModelFromFile(
+		LveDevice& device, const std::string& filepath) {
+		Builder builder{};
+		builder.loadModel(filepath);
+		return std::make_unique<LveModel>(device, builder);
 	}
 
 	void LveModel::createVertexBuffers(const std::vector<Vertex>& vertices) {
@@ -130,6 +158,75 @@ namespace LittleVulkanEngine {
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
 		return attributeDescriptions;
+	}
+
+	void LveModel::Builder::loadModel(const std::string& filepath) {
+		tinyobj::attrib_t attribute;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warning, error;
+
+		if (!tinyobj::LoadObj(&attribute, &shapes, &materials, &warning, &error, filepath.c_str())) {
+			throw std::runtime_error(warning + error);
+		}
+
+		vertices.clear();
+		indices.clear();
+
+		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+		// loop through each face in the model
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				Vertex vertex{};
+
+				// check if index provided
+				if (index.vertex_index >= 0) {
+					vertex.position = {
+						attribute.vertices[3 * index.vertex_index + 0],
+						attribute.vertices[3 * index.vertex_index + 1],
+						attribute.vertices[3 * index.vertex_index + 2]
+					};
+
+					// check if colors provided
+					auto colorIndex = 3 * index.vertex_index + 2;
+					if (colorIndex < attribute.colors.size()) {
+						vertex.color = {
+							attribute.colors[colorIndex - 2],
+							attribute.colors[colorIndex - 1],
+							attribute.colors[colorIndex - 0]
+						};
+					}
+					else {
+						vertex.color = { 1.f, 1.f, 1.f };
+					}
+				}
+
+				// check if normal provided
+				if (index.normal_index >= 0) {
+					vertex.normal = {
+						attribute.normals[3 * index.normal_index + 0],
+						attribute.normals[3 * index.normal_index + 1],
+						attribute.normals[3 * index.normal_index + 2]
+					};
+				}
+
+
+				// check if texture coords provided
+				if (index.texcoord_index >= 0) {
+					vertex.uv = {
+						attribute.texcoords[2 * index.texcoord_index + 0],
+						attribute.texcoords[2 * index.texcoord_index + 1]
+					};
+				}
+
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+				indices.push_back(uniqueVertices[vertex]);
+			}
+		}
 	}
 
 } // LittleVulkanEngine
