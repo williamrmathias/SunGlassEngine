@@ -69,8 +69,8 @@ namespace LittleVulkanEngine {
 
 		auto gameObj = LveGameObject::createGameObject();
 		gameObj.model = lveModel;
-		gameObj.transform.translation = { 0.f, 0.f, 2.5f };
-		gameObj.transform.scale = glm::vec3{ 3.f };
+		gameObj.transform.translation = { 0.f, 0.5f, 2.5f };
+		gameObj.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
 		gameObjects.push_back(std::move(gameObj));
 	}
 } // namespace LittleVulkanEngine
