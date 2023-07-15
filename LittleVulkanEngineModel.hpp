@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LittleVulkanEngineBuffer.hpp"
 #include "LittleVulkanEngineDevice.hpp"
 
 // libs
@@ -61,13 +62,11 @@ namespace LittleVulkanEngine {
 
 		LveDevice& lveDevice; // device must outlive model
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
+		std::unique_ptr<LveBuffer> vertexBuffer;
 		uint32_t vertexCount;
 
 		bool hasIndexBuffer = false;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
+		std::unique_ptr<LveBuffer> indexBuffer;
 		uint32_t indexCount;
 	};
 }

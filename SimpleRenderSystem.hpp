@@ -2,8 +2,10 @@
 
 #include "LittleVulkanEngineCamera.hpp"
 #include "LittleVulkanEngineDevice.hpp"
+#include "LittleVulkanEngineFrameInfo.hpp"
 #include "LittleVulkanEngineGameObject.hpp"
 #include "LittleVulkanEnginePipeline.hpp"
+
 
 // std
 #include <memory>
@@ -20,9 +22,8 @@ namespace LittleVulkanEngine {
 		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
 		void renderGameObjects(
-			VkCommandBuffer commandBuffer,
-			std::vector<LveGameObject>& gameObjects,
-			const LveCamera& camera
+			FrameInfo& frameInfo,
+			std::vector<LveGameObject>& gameObjects
 		);
 
 	private:
