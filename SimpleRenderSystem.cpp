@@ -68,9 +68,7 @@ namespace SunGlassEngine {
 			pipelineConfig);
 	}
 
-	void SimpleRenderSystem::renderGameObjects(
-		FrameInfo& frameInfo,
-		std::vector<SgGameObject>& gameObjects) {
+	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo) {
 
 		// render
 		sgPipeline->bind(frameInfo.commandBuffer);
@@ -88,7 +86,10 @@ namespace SunGlassEngine {
 			0,
 			nullptr);
 
-		for (auto& obj : gameObjects) {
+		for (auto& keyValue : frameInfo.gameObjects) {
+			auto& obj = keyValue.second;
+
+			if (obj.model == nullptr) continue;
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();

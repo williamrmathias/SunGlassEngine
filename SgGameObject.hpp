@@ -7,6 +7,7 @@
 
 // std
 #include <memory>
+#include <unordered_map>
 
 namespace SunGlassEngine {
 
@@ -25,6 +26,7 @@ namespace SunGlassEngine {
 	class SgGameObject {
 	public:
 		using id_t = unsigned int;
+		using Map = std::unordered_map<id_t, SgGameObject>;
 
 		static SgGameObject createGameObject() {
 			static id_t currentId = 0;

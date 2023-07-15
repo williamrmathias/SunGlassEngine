@@ -32,6 +32,6 @@ namespace SunGlassEngine {
 		SgRenderer sgRenderer{ sgWindow, sgDevice };
 
 		std::unique_ptr<SgDescriptorPool> globalPool{};
-		std::vector<SgGameObject> gameObjects;
+		SgGameObject::Map gameObjects;
 	};
 } // namespace SunGlassEngine
