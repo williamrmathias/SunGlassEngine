@@ -12,6 +12,7 @@ namespace LittleVulkanEngine {
 		float frameTime;
 		VkCommandBuffer commandBuffer;
 		LveCamera& camera;
+		VkDescriptorSet globalDescriptorSet;
 	};
 
 } // namespace LittleVulkanEngine

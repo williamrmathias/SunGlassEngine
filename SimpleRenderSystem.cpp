@@ -13,21 +13,21 @@
 namespace LittleVulkanEngine {
 
 	struct SimplePushConstantData {
-		glm::mat4 transform{ 1.0f }; // identity
+		glm::mat4 modelMatrix{ 1.0f }; // identity
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	SimpleRenderSystem::SimpleRenderSystem(LveDevice& device, VkRenderPass renderpass)
+	SimpleRenderSystem::SimpleRenderSystem(LveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
 		: lveDevice{ device } {
-		createPipelineLayout();
-		createPipeline(renderpass);
+		createPipelineLayout(globalSetLayout);
+		createPipeline(renderPass);
 	}
 
 	SimpleRenderSystem::~SimpleRenderSystem() {
 		vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
 	}
 
-	void SimpleRenderSystem::createPipelineLayout() {
+	void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 
 		VkPushConstantRange pushConstantRange{};
 		// use in both vertex and fragment shader
@@ -35,10 +35,12 @@ namespace LittleVulkanEngine {
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
+		std::vector<VkDescriptorSetLayout> descriptorSetLayout{ globalSetLayout };
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayout.size());
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayout.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
@@ -76,11 +78,20 @@ namespace LittleVulkanEngine {
 		auto projectionView = frameInfo.camera.getProjection() *
 			frameInfo.camera.getView();
 
+		vkCmdBindDescriptorSets(
+			frameInfo.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout,
+			0,
+			1,
+			&frameInfo.globalDescriptorSet,
+			0,
+			nullptr);
+
 		for (auto& obj : gameObjects) {
 
 			SimplePushConstantData push{};
-			auto modelMatrix = obj.transform.mat4();
-			push.transform = projectionView * modelMatrix;
+			push.modelMatrix = obj.transform.mat4();
 			push.normalMatrix = obj.transform.normalMatrix();
 
 			vkCmdPushConstants(

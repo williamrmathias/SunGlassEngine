@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LittleVulkanEngineDescriptors.hpp"
 #include "LittleVulkanEngineDevice.hpp"
 #include "LittleVulkanEngineGameObject.hpp"
 #include "LittleVulkanEngineWindow.hpp"
@@ -29,6 +30,8 @@ namespace LittleVulkanEngine {
 		LveWindow lveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		LveDevice lveDevice{ lveWindow };
 		LveRenderer lveRenderer{ lveWindow, lveDevice };
+
+		std::unique_ptr<LveDescriptorPool> globalPool{};
 		std::vector<LveGameObject> gameObjects;
 	};
 } // namespace LittleVulkanEngine
