@@ -1,4 +1,4 @@
-#include "LittleVulkanEngineSwapChain.hpp"
+#include "SgSwapChain.hpp"
 
 // std
 #include <array>
@@ -9,17 +9,17 @@
 #include <set>
 #include <stdexcept>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-LveSwapChain::LveSwapChain(LveDevice &deviceRef, VkExtent2D extent)
+SgSwapChain::SgSwapChain(SgDevice &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
     init();
 }
 
-LveSwapChain::LveSwapChain(
-    LveDevice& deviceRef,
+SgSwapChain::SgSwapChain(
+    SgDevice& deviceRef,
     VkExtent2D extent,
-    std::shared_ptr<LveSwapChain> previousSwapChain)
+    std::shared_ptr<SgSwapChain> previousSwapChain)
     : device{ deviceRef }, windowExtent{ extent }, oldSwapChain{previousSwapChain} {
     init();
 
@@ -27,7 +27,7 @@ LveSwapChain::LveSwapChain(
     oldSwapChain = nullptr;
 }
 
-void LveSwapChain::init() {
+void SgSwapChain::init() {
     createSwapChain();
     createImageViews();
     createRenderPass();
@@ -36,7 +36,7 @@ void LveSwapChain::init() {
     createSyncObjects();
 }
 
-LveSwapChain::~LveSwapChain() {
+SgSwapChain::~SgSwapChain() {
   for (auto imageView : swapChainImageViews) {
     vkDestroyImageView(device.device(), imageView, nullptr);
   }
@@ -67,7 +67,7 @@ LveSwapChain::~LveSwapChain() {
   }
 }
 
-VkResult LveSwapChain::acquireNextImage(uint32_t *imageIndex) {
+VkResult SgSwapChain::acquireNextImage(uint32_t *imageIndex) {
   vkWaitForFences(
       device.device(),
       1,
@@ -86,7 +86,7 @@ VkResult LveSwapChain::acquireNextImage(uint32_t *imageIndex) {
   return result;
 }
 
-VkResult LveSwapChain::submitCommandBuffers(
+VkResult SgSwapChain::submitCommandBuffers(
     const VkCommandBuffer *buffers, uint32_t *imageIndex) {
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
@@ -134,7 +134,7 @@ VkResult LveSwapChain::submitCommandBuffers(
   return result;
 }
 
-void LveSwapChain::createSwapChain() {
+void SgSwapChain::createSwapChain() {
   SwapChainSupportDetails swapChainSupport = device.getSwapChainSupport();
 
   VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -195,7 +195,7 @@ void LveSwapChain::createSwapChain() {
   swapChainExtent = extent;
 }
 
-void LveSwapChain::createImageViews() {
+void SgSwapChain::createImageViews() {
   swapChainImageViews.resize(swapChainImages.size());
   for (size_t i = 0; i < swapChainImages.size(); i++) {
     VkImageViewCreateInfo viewInfo{};
@@ -216,7 +216,7 @@ void LveSwapChain::createImageViews() {
   }
 }
 
-void LveSwapChain::createRenderPass() {
+void SgSwapChain::createRenderPass() {
   VkAttachmentDescription depthAttachment{};
   depthAttachment.format = findDepthFormat();
   depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -277,7 +277,7 @@ void LveSwapChain::createRenderPass() {
   }
 }
 
-void LveSwapChain::createFramebuffers() {
+void SgSwapChain::createFramebuffers() {
   swapChainFramebuffers.resize(imageCount());
   for (size_t i = 0; i < imageCount(); i++) {
     std::array<VkImageView, 2> attachments = {swapChainImageViews[i], depthImageViews[i]};
@@ -302,7 +302,7 @@ void LveSwapChain::createFramebuffers() {
   }
 }
 
-void LveSwapChain::createDepthResources() {
+void SgSwapChain::createDepthResources() {
   VkFormat depthFormat = findDepthFormat();
   swapChainDepthFormat = depthFormat;
   VkExtent2D swapChainExtent = getSwapChainExtent();
@@ -351,7 +351,7 @@ void LveSwapChain::createDepthResources() {
   }
 }
 
-void LveSwapChain::createSyncObjects() {
+void SgSwapChain::createSyncObjects() {
   imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -375,7 +375,7 @@ void LveSwapChain::createSyncObjects() {
   }
 }
 
-VkSurfaceFormatKHR LveSwapChain::chooseSwapSurfaceFormat(
+VkSurfaceFormatKHR SgSwapChain::chooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR> &availableFormats) {
   for (const auto &availableFormat : availableFormats) {
     if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
@@ -387,7 +387,7 @@ VkSurfaceFormatKHR LveSwapChain::chooseSwapSurfaceFormat(
   return availableFormats[0];
 }
 
-VkPresentModeKHR LveSwapChain::chooseSwapPresentMode(
+VkPresentModeKHR SgSwapChain::chooseSwapPresentMode(
     const std::vector<VkPresentModeKHR> &availablePresentModes) {
   for (const auto &availablePresentMode : availablePresentModes) {
     if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -407,7 +407,7 @@ VkPresentModeKHR LveSwapChain::chooseSwapPresentMode(
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D LveSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+VkExtent2D SgSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
   if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
   } else {
@@ -423,11 +423,11 @@ VkExtent2D LveSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabi
   }
 }
 
-VkFormat LveSwapChain::findDepthFormat() {
+VkFormat SgSwapChain::findDepthFormat() {
   return device.findSupportedFormat(
       {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
       VK_IMAGE_TILING_OPTIMAL,
       VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-}  // namespace lve
+}  // namespace sg

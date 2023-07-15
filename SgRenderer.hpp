@@ -1,27 +1,27 @@
 #pragma once
 
-#include "LittleVulkanEngineDevice.hpp"
-#include "LittleVulkanEngineSwapChain.hpp"
-#include "LittleVulkanEngineWindow.hpp"
+#include "SgDevice.hpp"
+#include "SgSwapChain.hpp"
+#include "SgWindow.hpp"
 
 // std
 #include <cassert>
 #include <memory>
 #include <vector>
 
-namespace LittleVulkanEngine {
-	class LveRenderer {
+namespace SunGlassEngine {
+	class SgRenderer {
 	public:
 
-		LveRenderer(LveWindow& window, LveDevice& device);
-		~LveRenderer();
+		SgRenderer(SgWindow& window, SgDevice& device);
+		~SgRenderer();
 
-		LveRenderer(const LveRenderer&) = delete;
-		LveRenderer& operator=(const LveRenderer&) = delete;
+		SgRenderer(const SgRenderer&) = delete;
+		SgRenderer& operator=(const SgRenderer&) = delete;
 
-		VkRenderPass getSwapChainRenderPass() const { return lveSwapChain->getRenderPass(); }
+		VkRenderPass getSwapChainRenderPass() const { return sgSwapChain->getRenderPass(); }
 
-		float getAspectRatio() const { return lveSwapChain->extentAspectRatio(); }
+		float getAspectRatio() const { return sgSwapChain->extentAspectRatio(); }
 
 		bool isFrameInProgress() const { return isFrameStarted; }
 
@@ -46,13 +46,13 @@ namespace LittleVulkanEngine {
 		void freeCommandBuffers();
 		void recreateSwapChain();
 
-		LveWindow& lveWindow;
-		LveDevice& lveDevice;
-		std::unique_ptr<LveSwapChain> lveSwapChain;
+		SgWindow& sgWindow;
+		SgDevice& sgDevice;
+		std::unique_ptr<SgSwapChain> sgSwapChain;
 		std::vector<VkCommandBuffer> commandBuffers;
 
 		uint32_t currentImageIndex;
 		int currentFrameIndex{ 0 };
 		bool isFrameStarted{ false };
 	};
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

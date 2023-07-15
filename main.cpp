@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 int main() {
-	LittleVulkanEngine::FirstApp app{};
+	SunGlassEngine::FirstApp app{};
 
 	try {
 		app.run();

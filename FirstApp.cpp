@@ -1,8 +1,8 @@
 #include "FirstApp.hpp"
 
 #include "KeyboardMovementController.hpp"
-#include "LittleVulkanEngineBuffer.hpp"
-#include "LittleVulkanEngineCamera.hpp"
+#include "SgBuffer.hpp"
+#include "SgCamera.hpp"
 #include "SimpleRenderSystem.hpp"
 
 // libs
@@ -17,7 +17,7 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	struct GlobalUbo {
 		glm::mat4 projectionView{ 1.f };
@@ -25,9 +25,9 @@ namespace LittleVulkanEngine {
 	};
 
 	FirstApp::FirstApp() {
-		globalPool = LveDescriptorPool::Builder(lveDevice)
-			.setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+		globalPool = SgDescriptorPool::Builder(sgDevice)
+			.setMaxSets(SgSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SgSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.build();
 		loadGameObjects();
 	}
@@ -36,10 +36,10 @@ namespace LittleVulkanEngine {
 
 	void FirstApp::run() {
 
-		std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		std::vector<std::unique_ptr<SgBuffer>> uboBuffers(SgSwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < uboBuffers.size(); i++) {
-			uboBuffers[i] = std::make_unique<LveBuffer>(
-				lveDevice,
+			uboBuffers[i] = std::make_unique<SgBuffer>(
+				sgDevice,
 				sizeof(GlobalUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -47,32 +47,32 @@ namespace LittleVulkanEngine {
 			uboBuffers[i]->map();
 		}
 
-		auto globalSetLayout = LveDescriptorSetLayout::Builder(lveDevice)
+		auto globalSetLayout = SgDescriptorSetLayout::Builder(sgDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.build();
 
-		std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		std::vector<VkDescriptorSet> globalDescriptorSets(SgSwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < globalDescriptorSets.size(); i++) {
 			auto bufferInfo = uboBuffers[i]->descriptorInfo();
-			LveDescriptorWriter(*globalSetLayout, *globalPool)
+			SgDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
 				.build(globalDescriptorSets[i]);
 		}
 
 		SimpleRenderSystem simpleRenderSystem(
-			lveDevice,
-			lveRenderer.getSwapChainRenderPass(),
+			sgDevice,
+			sgRenderer.getSwapChainRenderPass(),
 			globalSetLayout->getDescriptorSetLayout());
 
-		LveCamera camera{};
+		SgCamera camera{};
 		camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5));
 
-		auto viewerObject = LveGameObject::createGameObject();
+		auto viewerObject = SgGameObject::createGameObject();
 		KeyboardMovementController cameraController{};
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
-		while (!lveWindow.shouldClose()) {
+		while (!sgWindow.shouldClose()) {
 			glfwPollEvents();
 
 			auto newTime = std::chrono::high_resolution_clock::now();
@@ -80,16 +80,16 @@ namespace LittleVulkanEngine {
 				std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
-			cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
+			cameraController.moveInPlaneXZ(sgWindow.getGLFWwindow(), frameTime, viewerObject);
 			camera.setViewYXZ(
 				viewerObject.transform.translation, viewerObject.transform.rotation
 			);
 
-			float aspect = lveRenderer.getAspectRatio();
+			float aspect = sgRenderer.getAspectRatio();
 			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
 			
-			if (auto commandBuffer = lveRenderer.beginFrame()) {
-				int frameIndex = lveRenderer.getFrameIndex();
+			if (auto commandBuffer = sgRenderer.beginFrame()) {
+				int frameIndex = sgRenderer.getFrameIndex();
 				FrameInfo frameInfo{
 					frameIndex,
 					frameTime,
@@ -105,25 +105,25 @@ namespace LittleVulkanEngine {
 				uboBuffers[frameIndex]->flush();
 			
 				// render
-				lveRenderer.beginSwapChainRenderPass(commandBuffer);
+				sgRenderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
-				lveRenderer.endSwapChainRenderPass(commandBuffer);
-				lveRenderer.endFrame();
+				sgRenderer.endSwapChainRenderPass(commandBuffer);
+				sgRenderer.endFrame();
 			}
 		}
 
 		// block CPU until GPU operations are completed
-		vkDeviceWaitIdle(lveDevice.device());
+		vkDeviceWaitIdle(sgDevice.device());
 	}
 
 	void FirstApp::loadGameObjects() {
-		std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(
-			lveDevice, "models/smooth_vase.obj");
+		std::shared_ptr<SgModel> sgModel = SgModel::createModelFromFile(
+			sgDevice, "models/smooth_vase.obj");
 
-		auto gameObj = LveGameObject::createGameObject();
-		gameObj.model = lveModel;
+		auto gameObj = SgGameObject::createGameObject();
+		gameObj.model = sgModel;
 		gameObj.transform.translation = { 0.f, 0.5f, 2.5f };
 		gameObj.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
 		gameObjects.push_back(std::move(gameObj));
 	}
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

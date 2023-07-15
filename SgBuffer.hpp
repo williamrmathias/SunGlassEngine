@@ -1,22 +1,22 @@
 #pragma once
 
-#include "LittleVulkanEngineDevice.hpp"
+#include "SgDevice.hpp"
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-    class LveBuffer {
+    class SgBuffer {
     public:
-        LveBuffer(
-            LveDevice& device,
+        SgBuffer(
+            SgDevice& device,
             VkDeviceSize instanceSize,
             uint32_t instanceCount,
             VkBufferUsageFlags usageFlags,
             VkMemoryPropertyFlags memoryPropertyFlags,
             VkDeviceSize minOffsetAlignment = 1);
-        ~LveBuffer();
+        ~SgBuffer();
 
-        LveBuffer(const LveBuffer&) = delete;
-        LveBuffer& operator=(const LveBuffer&) = delete;
+        SgBuffer(const SgBuffer&) = delete;
+        SgBuffer& operator=(const SgBuffer&) = delete;
 
         VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         void unmap();
@@ -43,7 +43,7 @@ namespace LittleVulkanEngine {
     private:
         static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
-        LveDevice& lveDevice;
+        SgDevice& sgDevice;
         void* mapped = nullptr;
         VkBuffer buffer = VK_NULL_HANDLE;
         VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -56,4 +56,4 @@ namespace LittleVulkanEngine {
         VkMemoryPropertyFlags memoryPropertyFlags;
     };
 
-}  // namespace lve
+}  // namespace sg

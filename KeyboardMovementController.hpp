@@ -1,9 +1,9 @@
 #pragma once
 
-#include "LittleVulkanEngineGameObject.hpp"
-#include "LittleVulkanEngineWindow.hpp"
+#include "SgGameObject.hpp"
+#include "SgWindow.hpp"
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	class KeyboardMovementController {
 
@@ -23,11 +23,11 @@ namespace LittleVulkanEngine {
             int lookDown = GLFW_KEY_DOWN;
         };
 
-        void moveInPlaneXZ(GLFWwindow* window, float dt, LveGameObject& gameObject);
+        void moveInPlaneXZ(GLFWwindow* window, float dt, SgGameObject& gameObject);
 
         KeyMappings keys{};
         float moveSpeed{ 3.f };
         float lookSpeed{ 1.5f };
 	};
 
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

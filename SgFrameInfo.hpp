@@ -1,18 +1,18 @@
 #pragma once
 
-#include "LittleVulkanEngineCamera.hpp"
+#include "SgCamera.hpp"
 
 // lib
 #include <vulkan/vulkan.h>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	struct FrameInfo {
 		int frameIndex;
 		float frameTime;
 		VkCommandBuffer commandBuffer;
-		LveCamera& camera;
+		SgCamera& camera;
 		VkDescriptorSet globalDescriptorSet;
 	};
 
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

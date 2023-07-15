@@ -1,29 +1,29 @@
-#include "LittleVulkanEnginePipeline.hpp"
-#include "LittleVulkanEngineModel.hpp"
+#include "SgPipeline.hpp"
+#include "SgModel.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <cassert>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-	LvePipeline::LvePipeline(
-		LveDevice& device,
+	SgPipeline::SgPipeline(
+		SgDevice& device,
 		const std::string& vertFilepath,
 		const std::string& fragFilepath,
 		const PipelineConfigInfo& configInfo)
-		: lveDevice{ device } {
+		: sgDevice{ device } {
 		createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 	}
 
-	LvePipeline::~LvePipeline() {
-		vkDestroyShaderModule(lveDevice.device(), vertShaderModule, nullptr);
-		vkDestroyShaderModule(lveDevice.device(), fragShaderModule, nullptr);
-		vkDestroyPipeline(lveDevice.device(), graphicsPipeline, nullptr);
+	SgPipeline::~SgPipeline() {
+		vkDestroyShaderModule(sgDevice.device(), vertShaderModule, nullptr);
+		vkDestroyShaderModule(sgDevice.device(), fragShaderModule, nullptr);
+		vkDestroyPipeline(sgDevice.device(), graphicsPipeline, nullptr);
 	}
 
-	std::vector<char> LvePipeline::readFile(const std::string& filepath) {
+	std::vector<char> SgPipeline::readFile(const std::string& filepath) {
 
 		std::ifstream file{ filepath, std::ios::ate | std::ios::binary };
 
@@ -41,7 +41,7 @@ namespace LittleVulkanEngine {
 		return buffer;
 	}
 
-	void LvePipeline::createGraphicsPipeline(
+	void SgPipeline::createGraphicsPipeline(
 		const std::string& vertFilepath,
 		const std::string& fragFilepath,
 		const PipelineConfigInfo& configInfo) {
@@ -76,8 +76,8 @@ namespace LittleVulkanEngine {
 		shaderStages[1].pNext = nullptr;
 		shaderStages[1].pSpecializationInfo = nullptr;
 
-		auto bindingDescriptions = LveModel::Vertex::getBindingDescriptions();
-		auto attributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
+		auto bindingDescriptions = SgModel::Vertex::getBindingDescriptions();
+		auto attributeDescriptions = SgModel::Vertex::getAttributeDescriptions();
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -105,27 +105,27 @@ namespace LittleVulkanEngine {
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines(lveDevice.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+		if (vkCreateGraphicsPipelines(sgDevice.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create graphics pipeline");
 		}
 	}
 
-	void LvePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
+	void SgPipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-		if (vkCreateShaderModule(lveDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(sgDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create shader module");
 		}
 	}
 
-	void LvePipeline::bind(VkCommandBuffer commandBuffer) {
+	void SgPipeline::bind(VkCommandBuffer commandBuffer) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 	}
 
-	void LvePipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+	void SgPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
 
 		configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -196,4 +196,4 @@ namespace LittleVulkanEngine {
 			static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
 		configInfo.dynamicStateInfo.flags = 0; 
 	}
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

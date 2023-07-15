@@ -1,80 +1,80 @@
-#include "LittleVulkanEngineRenderer.hpp"
+#include "SgRenderer.hpp"
 
 // std
 #include <stdexcept>
 #include <array>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-	LveRenderer::LveRenderer(LveWindow& window, LveDevice& device)
-		: lveWindow{ window }, lveDevice(device) {
+	SgRenderer::SgRenderer(SgWindow& window, SgDevice& device)
+		: sgWindow{ window }, sgDevice(device) {
 		recreateSwapChain();
 		createCommandBuffers();
 	}
 
-	LveRenderer::~LveRenderer() {
+	SgRenderer::~SgRenderer() {
 		freeCommandBuffers();
 	}
 
-	void LveRenderer::recreateSwapChain() {
-		auto extent = lveWindow.getExtent();
+	void SgRenderer::recreateSwapChain() {
+		auto extent = sgWindow.getExtent();
 		while (extent.width == 0 || extent.height == 0) {
 			// engine will pause if one dimension is sizeless
-			extent = lveWindow.getExtent();
+			extent = sgWindow.getExtent();
 			glfwWaitEvents();
 		}
 
 		// wait till old swap chain is no longer used before
 		// making the new one
-		vkDeviceWaitIdle(lveDevice.device());
+		vkDeviceWaitIdle(sgDevice.device());
 
-		if (lveSwapChain == nullptr) {
-			lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, extent);
+		if (sgSwapChain == nullptr) {
+			sgSwapChain = std::make_unique<SgSwapChain>(sgDevice, extent);
 		}
 		else {
-			std::shared_ptr<LveSwapChain> oldSwapChain = std::move(lveSwapChain);
-			lveSwapChain = std::make_unique<LveSwapChain>(
-				lveDevice,
+			std::shared_ptr<SgSwapChain> oldSwapChain = std::move(sgSwapChain);
+			sgSwapChain = std::make_unique<SgSwapChain>(
+				sgDevice,
 				extent,
 				oldSwapChain);
 
-			if (!oldSwapChain->compareSwapFormats(*lveSwapChain.get())) {
+			if (!oldSwapChain->compareSwapFormats(*sgSwapChain.get())) {
 				throw std::runtime_error("Swap chain image (or depth) format has changed");
 			}
 		}
 	}
 
-	void LveRenderer::createCommandBuffers() {
+	void SgRenderer::createCommandBuffers() {
 		// number of command buffers should be equal to number of
 		// framebuffers
-		commandBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		commandBuffers.resize(SgSwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = lveDevice.getCommandPool();
+		allocInfo.commandPool = sgDevice.getCommandPool();
 		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-		if (vkAllocateCommandBuffers(lveDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(sgDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate command buffers");
 		}
 	};
 
-	void LveRenderer::freeCommandBuffers() {
+	void SgRenderer::freeCommandBuffers() {
 		vkFreeCommandBuffers(
-			lveDevice.device(),
-			lveDevice.getCommandPool(),
+			sgDevice.device(),
+			sgDevice.getCommandPool(),
 			static_cast<uint32_t>(commandBuffers.size()),
 			commandBuffers.data());
 
 		commandBuffers.clear();
 	}
 
-	VkCommandBuffer LveRenderer::beginFrame() {
+	VkCommandBuffer SgRenderer::beginFrame() {
 		assert(!isFrameStarted && "Can't call beginFrame while frame already in progress");
 
 		// acquire the next frame to render to
-		auto result = lveSwapChain->acquireNextImage(&currentImageIndex);
+		auto result = sgSwapChain->acquireNextImage(&currentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			// window has been resized
@@ -100,7 +100,7 @@ namespace LittleVulkanEngine {
 		return commandBuffer;
 	}
 
-	void LveRenderer::endFrame() {
+	void SgRenderer::endFrame() {
 		assert(isFrameStarted && "Can't call endFrame while frame not in progress");
 
 		auto commandBuffer = getCurrentCommandBuffer();
@@ -109,12 +109,12 @@ namespace LittleVulkanEngine {
 		}
 
 		// submit command buffer to device graphics queue
-		auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+		auto result = sgSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR
 			|| result == VK_SUBOPTIMAL_KHR
-			|| lveWindow.wasWindowResized()) {
-			lveWindow.resetWindowResizedFlag();
+			|| sgWindow.wasWindowResized()) {
+			sgWindow.resetWindowResizedFlag();
 			recreateSwapChain();
 		}
 
@@ -123,10 +123,10 @@ namespace LittleVulkanEngine {
 		}
 
 		isFrameStarted = false;
-		currentFrameIndex = (currentFrameIndex + 1) % LveSwapChain::MAX_FRAMES_IN_FLIGHT;
+		currentFrameIndex = (currentFrameIndex + 1) % SgSwapChain::MAX_FRAMES_IN_FLIGHT;
 	}
 
-	void LveRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) {
+	void SgRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) {
 		assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
 		assert(
 			commandBuffer == getCurrentCommandBuffer() &&
@@ -135,12 +135,12 @@ namespace LittleVulkanEngine {
 
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = lveSwapChain->getRenderPass();
-		renderPassInfo.framebuffer = lveSwapChain->getFrameBuffer(currentImageIndex);
+		renderPassInfo.renderPass = sgSwapChain->getRenderPass();
+		renderPassInfo.framebuffer = sgSwapChain->getFrameBuffer(currentImageIndex);
 
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		// must use swapchain extent and not window extent
-		renderPassInfo.renderArea.extent = lveSwapChain->getSwapChainExtent();
+		renderPassInfo.renderArea.extent = sgSwapChain->getSwapChainExtent();
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = { 0.01f, 0.01f, 0.01f, 1.0f };
@@ -153,16 +153,16 @@ namespace LittleVulkanEngine {
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(lveSwapChain->getSwapChainExtent().width);
-		viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
+		viewport.width = static_cast<float>(sgSwapChain->getSwapChainExtent().width);
+		viewport.height = static_cast<float>(sgSwapChain->getSwapChainExtent().height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		VkRect2D scissor{ {0, 0}, lveSwapChain->getSwapChainExtent() };
+		VkRect2D scissor{ {0, 0}, sgSwapChain->getSwapChainExtent() };
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	}
 
-	void LveRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer) {
+	void SgRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer) {
 		assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
 		assert(
 			commandBuffer == getCurrentCommandBuffer() &&
@@ -171,4 +171,4 @@ namespace LittleVulkanEngine {
 
 		vkCmdEndRenderPass(commandBuffer);
 	}
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

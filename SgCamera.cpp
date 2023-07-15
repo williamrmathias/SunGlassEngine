@@ -1,12 +1,12 @@
-#include "LittleVulkanEngineCamera.hpp"
+#include "SgCamera.hpp"
 
 // std
 #include <cassert>
 #include <limits>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-	void LveCamera::setOrthographicProjection(
+	void SgCamera::setOrthographicProjection(
 		float left, float right, float top, float bottom, float near, float far) {
 		projectionMatrix = glm::mat4{ 1.0f };
 		projectionMatrix[0][0] = 2.f / (right - left);
@@ -17,7 +17,7 @@ namespace LittleVulkanEngine {
 		projectionMatrix[3][2] = -near / (far - near);
 	}
 
-	void LveCamera::setPerspectiveProjection(
+	void SgCamera::setPerspectiveProjection(
 		float fieldOfViewY, float aspect, float near, float far) {
 		assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 		const float tanHalfFovy = tan(fieldOfViewY / 2.f);
@@ -29,7 +29,7 @@ namespace LittleVulkanEngine {
 		projectionMatrix[3][2] = -(far * near) / (far - near);
 	}
 
-	void LveCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
+	void SgCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
 		assert(direction != glm::vec3(0.f, 0.f, 0.f) && "Can't set view direction : direction is zero");
 		const glm::vec3 w{ glm::normalize(direction) };
 		const glm::vec3 u{ glm::normalize(glm::cross(w, up)) };
@@ -50,11 +50,11 @@ namespace LittleVulkanEngine {
 		viewMatrix[3][2] = -glm::dot(w, position);
 	}
 
-	void LveCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
+	void SgCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
 		setViewDirection(position, target - position, up);
 	}
 
-	void LveCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
+	void SgCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
 		const float c2 = glm::cos(rotation.x);
@@ -79,4 +79,4 @@ namespace LittleVulkanEngine {
 		viewMatrix[3][2] = -glm::dot(w, position);
 	}
 
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

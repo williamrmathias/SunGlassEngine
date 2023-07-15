@@ -1,5 +1,5 @@
-#include "LittleVulkanEngineModel.hpp"
-#include "LittleVulkanEngineUtils.hpp"
+#include "SgModel.hpp"
+#include "SgUtils.hpp"
 
 // libs
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -15,41 +15,41 @@
 namespace std {
 
 	template <>
-	struct hash<LittleVulkanEngine::LveModel::Vertex> {
-		size_t operator()(LittleVulkanEngine::LveModel::Vertex const& vertex) const {
+	struct hash<SunGlassEngine::SgModel::Vertex> {
+		size_t operator()(SunGlassEngine::SgModel::Vertex const& vertex) const {
 			size_t seed = 0;
-			LittleVulkanEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+			SunGlassEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
 			return seed;
 		}
 	};
 
 }
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 	
-	LveModel::LveModel(LveDevice& device, const LveModel::Builder& builder)
-		:lveDevice{device} {
+	SgModel::SgModel(SgDevice& device, const SgModel::Builder& builder)
+		:sgDevice{device} {
 		createVertexBuffers(builder.vertices);
 		createIndexBuffers(builder.indices);
 	}
 
-	LveModel::~LveModel() {}
+	SgModel::~SgModel() {}
 
-	std::unique_ptr<LveModel> LveModel::createModelFromFile(
-		LveDevice& device, const std::string& filepath) {
+	std::unique_ptr<SgModel> SgModel::createModelFromFile(
+		SgDevice& device, const std::string& filepath) {
 		Builder builder{};
 		builder.loadModel(filepath);
-		return std::make_unique<LveModel>(device, builder);
+		return std::make_unique<SgModel>(device, builder);
 	}
 
-	void LveModel::createVertexBuffers(const std::vector<Vertex>& vertices) {
+	void SgModel::createVertexBuffers(const std::vector<Vertex>& vertices) {
 		vertexCount = static_cast<uint32_t>(vertices.size());
 		assert(vertexCount >= 3 && "Vertex count must be at least 3");
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
 		uint32_t vertexSize = sizeof(vertices[0]);
 
-		LveBuffer stagingBuffer{
-			lveDevice,
+		SgBuffer stagingBuffer{
+			sgDevice,
 			vertexSize,
 			vertexCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -59,18 +59,18 @@ namespace LittleVulkanEngine {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void*)vertices.data());
 
-		vertexBuffer = std::make_unique<LveBuffer>(
-			lveDevice,
+		vertexBuffer = std::make_unique<SgBuffer>(
+			sgDevice,
 			vertexSize,
 			vertexCount,
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		lveDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+		sgDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 	}
 
-	void LveModel::createIndexBuffers(const std::vector<uint32_t>& indices) {
+	void SgModel::createIndexBuffers(const std::vector<uint32_t>& indices) {
 		indexCount = static_cast<uint32_t>(indices.size());
 		hasIndexBuffer = indexCount > 0;
 
@@ -79,8 +79,8 @@ namespace LittleVulkanEngine {
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
 		uint32_t indexSize = sizeof(indices[0]);
 
-		LveBuffer stagingBuffer{
-			lveDevice,
+		SgBuffer stagingBuffer{
+			sgDevice,
 			indexSize,
 			indexCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -90,18 +90,18 @@ namespace LittleVulkanEngine {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void*)indices.data());
 
-		indexBuffer = std::make_unique<LveBuffer>(
-			lveDevice,
+		indexBuffer = std::make_unique<SgBuffer>(
+			sgDevice,
 			indexSize,
 			indexCount,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		lveDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+		sgDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
 	}
 
-	void LveModel::draw(VkCommandBuffer commandBuffer) {
+	void SgModel::draw(VkCommandBuffer commandBuffer) {
 		if (hasIndexBuffer) {
 			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 		}
@@ -110,7 +110,7 @@ namespace LittleVulkanEngine {
 		}
 	}
 
-	void LveModel::bind(VkCommandBuffer commandBuffer) {
+	void SgModel::bind(VkCommandBuffer commandBuffer) {
 		VkBuffer buffers[] = { vertexBuffer->getBuffer() };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
@@ -120,7 +120,7 @@ namespace LittleVulkanEngine {
 		}
 	}
 
-	std::vector<VkVertexInputBindingDescription> LveModel::Vertex::getBindingDescriptions() {
+	std::vector<VkVertexInputBindingDescription> SgModel::Vertex::getBindingDescriptions() {
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 		bindingDescriptions[0].binding = 0;
 		bindingDescriptions[0].stride = sizeof(Vertex);
@@ -128,7 +128,7 @@ namespace LittleVulkanEngine {
 		return bindingDescriptions;
 	}
 
-	std::vector<VkVertexInputAttributeDescription> LveModel::Vertex::getAttributeDescriptions() {
+	std::vector<VkVertexInputAttributeDescription> SgModel::Vertex::getAttributeDescriptions() {
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 
 		attributeDescriptions.push_back({
@@ -143,7 +143,7 @@ namespace LittleVulkanEngine {
 		return attributeDescriptions;
 	}
 
-	void LveModel::Builder::loadModel(const std::string& filepath) {
+	void SgModel::Builder::loadModel(const std::string& filepath) {
 		tinyobj::attrib_t attribute;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -205,4 +205,4 @@ namespace LittleVulkanEngine {
 		}
 	}
 
-} // LittleVulkanEngine
+} // SunGlassEngine

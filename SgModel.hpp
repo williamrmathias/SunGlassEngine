@@ -1,7 +1,7 @@
 #pragma once
 
-#include "LittleVulkanEngineBuffer.hpp"
-#include "LittleVulkanEngineDevice.hpp"
+#include "SgBuffer.hpp"
+#include "SgDevice.hpp"
 
 // libs
 #define GLF_FORCE_RADIANS // angles specified in randians
@@ -12,8 +12,8 @@
 #include <memory>
 #include <vector>
 
-namespace LittleVulkanEngine {
-	class LveModel {
+namespace SunGlassEngine {
+	class SgModel {
 		// this class servers to read in model data
 		// and export it to the gpu device
 
@@ -43,14 +43,14 @@ namespace LittleVulkanEngine {
 			void loadModel(const std::string& filepath);
 		};
 
-		LveModel(LveDevice& device, const LveModel::Builder& builder);
-		~LveModel();
+		SgModel(SgDevice& device, const SgModel::Builder& builder);
+		~SgModel();
 
-		static std::unique_ptr<LveModel> createModelFromFile(
-			LveDevice& device, const std::string& filepath);
+		static std::unique_ptr<SgModel> createModelFromFile(
+			SgDevice& device, const std::string& filepath);
 
-		LveModel(const LveModel&) = delete;
-		LveModel& operator=(const LveModel&) = delete;
+		SgModel(const SgModel&) = delete;
+		SgModel& operator=(const SgModel&) = delete;
 
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);
@@ -60,13 +60,13 @@ namespace LittleVulkanEngine {
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
 		void createIndexBuffers(const std::vector<uint32_t>& indices);
 
-		LveDevice& lveDevice; // device must outlive model
+		SgDevice& sgDevice; // device must outlive model
 
-		std::unique_ptr<LveBuffer> vertexBuffer;
+		std::unique_ptr<SgBuffer> vertexBuffer;
 		uint32_t vertexCount;
 
 		bool hasIndexBuffer = false;
-		std::unique_ptr<LveBuffer> indexBuffer;
+		std::unique_ptr<SgBuffer> indexBuffer;
 		uint32_t indexCount;
 	};
 }

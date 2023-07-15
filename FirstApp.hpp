@@ -1,16 +1,16 @@
 #pragma once
 
-#include "LittleVulkanEngineDescriptors.hpp"
-#include "LittleVulkanEngineDevice.hpp"
-#include "LittleVulkanEngineGameObject.hpp"
-#include "LittleVulkanEngineWindow.hpp"
-#include "LittleVulkanEngineRenderer.hpp"
+#include "SgDescriptors.hpp"
+#include "SgDevice.hpp"
+#include "SgGameObject.hpp"
+#include "SgWindow.hpp"
+#include "SgRenderer.hpp"
 
 // std
 #include <memory>
 #include <vector>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 	class FirstApp {
 	public:
 		static constexpr int WIDTH = 800;
@@ -27,11 +27,11 @@ namespace LittleVulkanEngine {
 	private:
 		void loadGameObjects();
 
-		LveWindow lveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
-		LveDevice lveDevice{ lveWindow };
-		LveRenderer lveRenderer{ lveWindow, lveDevice };
+		SgWindow sgWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
+		SgDevice sgDevice{ sgWindow };
+		SgRenderer sgRenderer{ sgWindow, sgDevice };
 
-		std::unique_ptr<LveDescriptorPool> globalPool{};
-		std::vector<LveGameObject> gameObjects;
+		std::unique_ptr<SgDescriptorPool> globalPool{};
+		std::vector<SgGameObject> gameObjects;
 	};
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

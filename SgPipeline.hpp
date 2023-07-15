@@ -1,12 +1,12 @@
 #pragma once
 
-#include "LittleVulkanEngineDevice.hpp"
+#include "SgDevice.hpp"
 
 // std
 #include <string>
 #include <vector>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	struct PipelineConfigInfo {
 		PipelineConfigInfo() = default;
@@ -27,20 +27,20 @@ namespace LittleVulkanEngine {
 		uint32_t subpass = 0;
 	};
 
-	class LvePipeline {
+	class SgPipeline {
 	public:
-		LvePipeline(
-			LveDevice& device,
+		SgPipeline(
+			SgDevice& device,
 			const std::string& vertFilepath,
 			const std::string& fragFilepath,
 			const PipelineConfigInfo& configInfo);
 
-		~LvePipeline();
+		~SgPipeline();
 
 
-		LvePipeline(const LvePipeline&) = delete;
-		LvePipeline& operator=(const LvePipeline&) = delete;
-		LvePipeline() = default;
+		SgPipeline(const SgPipeline&) = delete;
+		SgPipeline& operator=(const SgPipeline&) = delete;
+		SgPipeline() = default;
 
 		void bind(VkCommandBuffer commandBuffer);
 
@@ -56,7 +56,7 @@ namespace LittleVulkanEngine {
 
 		void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-		LveDevice& lveDevice; // must outlive the Pipeline
+		SgDevice& sgDevice; // must outlive the Pipeline
 		VkPipeline graphicsPipeline;
 		VkShaderModule vertShaderModule;
 		VkShaderModule fragShaderModule;

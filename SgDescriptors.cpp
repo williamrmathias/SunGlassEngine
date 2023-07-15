@@ -1,14 +1,14 @@
-#include "LittleVulkanEngineDescriptors.hpp"
+#include "SgDescriptors.hpp"
 
 // std
 #include <cassert>
 #include <stdexcept>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
     // *************** Descriptor Set Layout Builder *********************
 
-    LveDescriptorSetLayout::Builder& LveDescriptorSetLayout::Builder::addBinding(
+    SgDescriptorSetLayout::Builder& SgDescriptorSetLayout::Builder::addBinding(
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
@@ -23,15 +23,15 @@ namespace LittleVulkanEngine {
         return *this;
     }
 
-    std::unique_ptr<LveDescriptorSetLayout> LveDescriptorSetLayout::Builder::build() const {
-        return std::make_unique<LveDescriptorSetLayout>(lveDevice, bindings);
+    std::unique_ptr<SgDescriptorSetLayout> SgDescriptorSetLayout::Builder::build() const {
+        return std::make_unique<SgDescriptorSetLayout>(sgDevice, bindings);
     }
 
     // *************** Descriptor Set Layout *********************
 
-    LveDescriptorSetLayout::LveDescriptorSetLayout(
-        LveDevice& lveDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
-        : lveDevice{ lveDevice }, bindings{ bindings } {
+    SgDescriptorSetLayout::SgDescriptorSetLayout(
+        SgDevice& sgDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
+        : sgDevice{ sgDevice }, bindings{ bindings } {
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
         for (auto kv : bindings) {
             setLayoutBindings.push_back(kv.second);
@@ -43,7 +43,7 @@ namespace LittleVulkanEngine {
         descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 
         if (vkCreateDescriptorSetLayout(
-            lveDevice.device(),
+            sgDevice.device(),
             &descriptorSetLayoutInfo,
             nullptr,
             &descriptorSetLayout) != VK_SUCCESS) {
@@ -51,40 +51,40 @@ namespace LittleVulkanEngine {
         }
     }
 
-    LveDescriptorSetLayout::~LveDescriptorSetLayout() {
-        vkDestroyDescriptorSetLayout(lveDevice.device(), descriptorSetLayout, nullptr);
+    SgDescriptorSetLayout::~SgDescriptorSetLayout() {
+        vkDestroyDescriptorSetLayout(sgDevice.device(), descriptorSetLayout, nullptr);
     }
 
     // *************** Descriptor Pool Builder *********************
 
-    LveDescriptorPool::Builder& LveDescriptorPool::Builder::addPoolSize(
+    SgDescriptorPool::Builder& SgDescriptorPool::Builder::addPoolSize(
         VkDescriptorType descriptorType, uint32_t count) {
         poolSizes.push_back({ descriptorType, count });
         return *this;
     }
 
-    LveDescriptorPool::Builder& LveDescriptorPool::Builder::setPoolFlags(
+    SgDescriptorPool::Builder& SgDescriptorPool::Builder::setPoolFlags(
         VkDescriptorPoolCreateFlags flags) {
         poolFlags = flags;
         return *this;
     }
-    LveDescriptorPool::Builder& LveDescriptorPool::Builder::setMaxSets(uint32_t count) {
+    SgDescriptorPool::Builder& SgDescriptorPool::Builder::setMaxSets(uint32_t count) {
         maxSets = count;
         return *this;
     }
 
-    std::unique_ptr<LveDescriptorPool> LveDescriptorPool::Builder::build() const {
-        return std::make_unique<LveDescriptorPool>(lveDevice, maxSets, poolFlags, poolSizes);
+    std::unique_ptr<SgDescriptorPool> SgDescriptorPool::Builder::build() const {
+        return std::make_unique<SgDescriptorPool>(sgDevice, maxSets, poolFlags, poolSizes);
     }
 
     // *************** Descriptor Pool *********************
 
-    LveDescriptorPool::LveDescriptorPool(
-        LveDevice& lveDevice,
+    SgDescriptorPool::SgDescriptorPool(
+        SgDevice& sgDevice,
         uint32_t maxSets,
         VkDescriptorPoolCreateFlags poolFlags,
         const std::vector<VkDescriptorPoolSize>& poolSizes)
-        : lveDevice{ lveDevice } {
+        : sgDevice{ sgDevice } {
         VkDescriptorPoolCreateInfo descriptorPoolInfo{};
         descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -92,17 +92,17 @@ namespace LittleVulkanEngine {
         descriptorPoolInfo.maxSets = maxSets;
         descriptorPoolInfo.flags = poolFlags;
 
-        if (vkCreateDescriptorPool(lveDevice.device(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
+        if (vkCreateDescriptorPool(sgDevice.device(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
             VK_SUCCESS) {
             throw std::runtime_error("failed to create descriptor pool!");
         }
     }
 
-    LveDescriptorPool::~LveDescriptorPool() {
-        vkDestroyDescriptorPool(lveDevice.device(), descriptorPool, nullptr);
+    SgDescriptorPool::~SgDescriptorPool() {
+        vkDestroyDescriptorPool(sgDevice.device(), descriptorPool, nullptr);
     }
 
-    bool LveDescriptorPool::allocateDescriptor(
+    bool SgDescriptorPool::allocateDescriptor(
         const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -112,30 +112,30 @@ namespace LittleVulkanEngine {
 
         // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
         // a new pool whenever an old pool fills up. But this is beyond our current scope
-        if (vkAllocateDescriptorSets(lveDevice.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
+        if (vkAllocateDescriptorSets(sgDevice.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
             return false;
         }
         return true;
     }
 
-    void LveDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet>& descriptors) const {
+    void SgDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet>& descriptors) const {
         vkFreeDescriptorSets(
-            lveDevice.device(),
+            sgDevice.device(),
             descriptorPool,
             static_cast<uint32_t>(descriptors.size()),
             descriptors.data());
     }
 
-    void LveDescriptorPool::resetPool() {
-        vkResetDescriptorPool(lveDevice.device(), descriptorPool, 0);
+    void SgDescriptorPool::resetPool() {
+        vkResetDescriptorPool(sgDevice.device(), descriptorPool, 0);
     }
 
     // *************** Descriptor Writer *********************
 
-    LveDescriptorWriter::LveDescriptorWriter(LveDescriptorSetLayout& setLayout, LveDescriptorPool& pool)
+    SgDescriptorWriter::SgDescriptorWriter(SgDescriptorSetLayout& setLayout, SgDescriptorPool& pool)
         : setLayout{ setLayout }, pool{ pool } {}
 
-    LveDescriptorWriter& LveDescriptorWriter::writeBuffer(
+    SgDescriptorWriter& SgDescriptorWriter::writeBuffer(
         uint32_t binding, VkDescriptorBufferInfo* bufferInfo) {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
@@ -156,7 +156,7 @@ namespace LittleVulkanEngine {
         return *this;
     }
 
-    LveDescriptorWriter& LveDescriptorWriter::writeImage(
+    SgDescriptorWriter& SgDescriptorWriter::writeImage(
         uint32_t binding, VkDescriptorImageInfo* imageInfo) {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
@@ -177,7 +177,7 @@ namespace LittleVulkanEngine {
         return *this;
     }
 
-    bool LveDescriptorWriter::build(VkDescriptorSet& set) {
+    bool SgDescriptorWriter::build(VkDescriptorSet& set) {
         bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
         if (!success) {
             return false;
@@ -186,11 +186,11 @@ namespace LittleVulkanEngine {
         return true;
     }
 
-    void LveDescriptorWriter::overwrite(VkDescriptorSet& set) {
+    void SgDescriptorWriter::overwrite(VkDescriptorSet& set) {
         for (auto& write : writes) {
             write.dstSet = set;
         }
-        vkUpdateDescriptorSets(pool.lveDevice.device(), writes.size(), writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(pool.sgDevice.device(), writes.size(), writes.data(), 0, nullptr);
     }
 
-}  // namespace lve
+}  // namespace sg

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LittleVulkanEngineDevice.hpp"
+#include "SgDevice.hpp"
 
 // vulkan headers
 #include <vulkan/vulkan.h>
@@ -10,21 +10,21 @@
 #include <vector>
 #include <memory>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-class LveSwapChain {
+class SgSwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  LveSwapChain(LveDevice &deviceRef, VkExtent2D windowExtent);
-  LveSwapChain(
-      LveDevice& deviceRef,
+  SgSwapChain(SgDevice &deviceRef, VkExtent2D windowExtent);
+  SgSwapChain(
+      SgDevice& deviceRef,
       VkExtent2D windowExtent,
-      std::shared_ptr<LveSwapChain> previousSwapChain);
-  ~LveSwapChain();
+      std::shared_ptr<SgSwapChain> previousSwapChain);
+  ~SgSwapChain();
 
-  LveSwapChain(const LveSwapChain&) = delete;
-  LveSwapChain& operator=(const LveSwapChain&) = delete;
+  SgSwapChain(const SgSwapChain&) = delete;
+  SgSwapChain& operator=(const SgSwapChain&) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -43,7 +43,7 @@ class LveSwapChain {
   VkResult acquireNextImage(uint32_t *imageIndex);
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
-  bool compareSwapFormats(const LveSwapChain& swapChain) const {
+  bool compareSwapFormats(const SgSwapChain& swapChain) const {
       return swapChain.swapChainDepthFormat == swapChainDepthFormat &&
           swapChain.swapChainImageFormat == swapChainImageFormat;
   }
@@ -77,11 +77,11 @@ class LveSwapChain {
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
-  LveDevice& device;
+  SgDevice& device;
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
-  std::shared_ptr<LveSwapChain> oldSwapChain;
+  std::shared_ptr<SgSwapChain> oldSwapChain;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -90,4 +90,4 @@ class LveSwapChain {
   size_t currentFrame = 0;
 };
 
-}  // namespace lve
+}  // namespace sg

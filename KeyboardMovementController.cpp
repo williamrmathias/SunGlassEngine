@@ -1,9 +1,9 @@
 #include "KeyboardMovementController.hpp"
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	void KeyboardMovementController::moveInPlaneXZ(
-		GLFWwindow* window, float dt, LveGameObject& gameObject) {
+		GLFWwindow* window, float dt, SgGameObject& gameObject) {
 
 		glm::vec3 rotate{ 0 };
 		if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.f;
@@ -43,4 +43,4 @@ namespace LittleVulkanEngine {
 		}
 	}
 
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

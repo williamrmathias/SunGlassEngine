@@ -5,13 +5,13 @@
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
 
-#include "LittleVulkanEngineBuffer.hpp"
+#include "SgBuffer.hpp"
 
  // std
 #include <cassert>
 #include <cstring>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
     /**
      * Returns the minimum instance size required to be compatible with devices minOffsetAlignment
@@ -22,21 +22,21 @@ namespace LittleVulkanEngine {
      *
      * @return VkResult of the buffer mapping call
      */
-    VkDeviceSize LveBuffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
+    VkDeviceSize SgBuffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
         if (minOffsetAlignment > 0) {
             return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
         }
         return instanceSize;
     }
 
-    LveBuffer::LveBuffer(
-        LveDevice& device,
+    SgBuffer::SgBuffer(
+        SgDevice& device,
         VkDeviceSize instanceSize,
         uint32_t instanceCount,
         VkBufferUsageFlags usageFlags,
         VkMemoryPropertyFlags memoryPropertyFlags,
         VkDeviceSize minOffsetAlignment)
-        : lveDevice{ device },
+        : sgDevice{ device },
         instanceSize{ instanceSize },
         instanceCount{ instanceCount },
         usageFlags{ usageFlags },
@@ -46,10 +46,10 @@ namespace LittleVulkanEngine {
         device.createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);
     }
 
-    LveBuffer::~LveBuffer() {
+    SgBuffer::~SgBuffer() {
         unmap();
-        vkDestroyBuffer(lveDevice.device(), buffer, nullptr);
-        vkFreeMemory(lveDevice.device(), memory, nullptr);
+        vkDestroyBuffer(sgDevice.device(), buffer, nullptr);
+        vkFreeMemory(sgDevice.device(), memory, nullptr);
     }
 
     /**
@@ -61,9 +61,9 @@ namespace LittleVulkanEngine {
      *
      * @return VkResult of the buffer mapping call
      */
-    VkResult LveBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
+    VkResult SgBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
         assert(buffer && memory && "Called map on buffer before create");
-        return vkMapMemory(lveDevice.device(), memory, offset, size, 0, &mapped);
+        return vkMapMemory(sgDevice.device(), memory, offset, size, 0, &mapped);
     }
 
     /**
@@ -71,9 +71,9 @@ namespace LittleVulkanEngine {
      *
      * @note Does not return a result as vkUnmapMemory can't fail
      */
-    void LveBuffer::unmap() {
+    void SgBuffer::unmap() {
         if (mapped) {
-            vkUnmapMemory(lveDevice.device(), memory);
+            vkUnmapMemory(sgDevice.device(), memory);
             mapped = nullptr;
         }
     }
@@ -87,7 +87,7 @@ namespace LittleVulkanEngine {
      * @param offset (Optional) Byte offset from beginning of mapped region
      *
      */
-    void LveBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
+    void SgBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
         assert(mapped && "Cannot copy to unmapped buffer");
 
         if (size == VK_WHOLE_SIZE) {
@@ -111,13 +111,13 @@ namespace LittleVulkanEngine {
      *
      * @return VkResult of the flush call
      */
-    VkResult LveBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
+    VkResult SgBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
         VkMappedMemoryRange mappedRange = {};
         mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         mappedRange.memory = memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vkFlushMappedMemoryRanges(sgDevice.device(), 1, &mappedRange);
     }
 
     /**
@@ -131,13 +131,13 @@ namespace LittleVulkanEngine {
      *
      * @return VkResult of the invalidate call
      */
-    VkResult LveBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
+    VkResult SgBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
         VkMappedMemoryRange mappedRange = {};
         mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         mappedRange.memory = memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vkInvalidateMappedMemoryRanges(sgDevice.device(), 1, &mappedRange);
     }
 
     /**
@@ -148,7 +148,7 @@ namespace LittleVulkanEngine {
      *
      * @return VkDescriptorBufferInfo of specified offset and range
      */
-    VkDescriptorBufferInfo LveBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
+    VkDescriptorBufferInfo SgBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
         return VkDescriptorBufferInfo{
             buffer,
             offset,
@@ -163,7 +163,7 @@ namespace LittleVulkanEngine {
      * @param index Used in offset calculation
      *
      */
-    void LveBuffer::writeToIndex(void* data, int index) {
+    void SgBuffer::writeToIndex(void* data, int index) {
         writeToBuffer(data, instanceSize, index * alignmentSize);
     }
 
@@ -173,7 +173,7 @@ namespace LittleVulkanEngine {
      * @param index Used in offset calculation
      *
      */
-    VkResult LveBuffer::flushIndex(int index) { return flush(alignmentSize, index * alignmentSize); }
+    VkResult SgBuffer::flushIndex(int index) { return flush(alignmentSize, index * alignmentSize); }
 
     /**
      * Create a buffer info descriptor
@@ -182,7 +182,7 @@ namespace LittleVulkanEngine {
      *
      * @return VkDescriptorBufferInfo for instance at index
      */
-    VkDescriptorBufferInfo LveBuffer::descriptorInfoForIndex(int index) {
+    VkDescriptorBufferInfo SgBuffer::descriptorInfoForIndex(int index) {
         return descriptorInfo(alignmentSize, index * alignmentSize);
     }
 
@@ -195,8 +195,8 @@ namespace LittleVulkanEngine {
      *
      * @return VkResult of the invalidate call
      */
-    VkResult LveBuffer::invalidateIndex(int index) {
+    VkResult SgBuffer::invalidateIndex(int index) {
         return invalidate(alignmentSize, index * alignmentSize);
     }
 
-}  // namespace lve
+}  // namespace sg

@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	// from: https://stackoverflow.com/a/57595105
 	template <typename T, typename... Rest>
@@ -11,4 +11,4 @@ namespace LittleVulkanEngine {
 		(hashCombine(seed, rest), ...);
 	};
 
-}  // namespace lve
+}  // namespace sg

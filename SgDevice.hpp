@@ -1,12 +1,12 @@
 #pragma once
 
-#include "LittleVulkanEngineWindow.hpp"
+#include "SgWindow.hpp"
 
 // std lib headers
 #include <string>
 #include <vector>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities;
@@ -22,7 +22,7 @@ struct QueueFamilyIndices {
   bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-class LveDevice {
+class SgDevice {
  public:
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
@@ -30,14 +30,14 @@ class LveDevice {
   const bool enableValidationLayers = true;
 #endif
 
-  LveDevice(LveWindow &window);
-  ~LveDevice();
+  SgDevice(SgWindow &window);
+  ~SgDevice();
 
   // Not copyable or movable
-  LveDevice(const LveDevice&) = delete;
-  LveDevice& operator=(const LveDevice&) = delete;
-  LveDevice(LveDevice&&) = delete;
-  LveDevice&operator=(LveDevice&&) = delete;
+  SgDevice(const SgDevice&) = delete;
+  SgDevice& operator=(const SgDevice&) = delete;
+  SgDevice(SgDevice&&) = delete;
+  SgDevice&operator=(SgDevice&&) = delete;
 
   VkCommandPool getCommandPool() { return commandPool; }
   VkDevice device() { return device_; }
@@ -93,7 +93,7 @@ class LveDevice {
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-  LveWindow &window;
+  SgWindow &window;
   VkCommandPool commandPool;
 
   VkDevice device_;
@@ -105,4 +105,4 @@ class LveDevice {
   const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
-}  // namespace lve
+}  // namespace sg

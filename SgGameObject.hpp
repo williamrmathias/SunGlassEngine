@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LittleVulkanEngineModel.hpp"
+#include "SgModel.hpp"
 
 // libs
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,7 +8,7 @@
 // std
 #include <memory>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	struct TransformComponent {
 		glm::vec3 translation{}; // position offset
@@ -22,28 +22,28 @@ namespace LittleVulkanEngine {
 		glm::mat3 normalMatrix();
 	};
 
-	class LveGameObject {
+	class SgGameObject {
 	public:
 		using id_t = unsigned int;
 
-		static LveGameObject createGameObject() {
+		static SgGameObject createGameObject() {
 			static id_t currentId = 0;
-			return LveGameObject(currentId++);
+			return SgGameObject(currentId++);
 		}
 
-		LveGameObject(const LveGameObject&) = delete;
-		LveGameObject& operator=(const LveGameObject&) = delete;
-		LveGameObject(LveGameObject&&) = default;
-		LveGameObject& operator=(LveGameObject&&) = default;
+		SgGameObject(const SgGameObject&) = delete;
+		SgGameObject& operator=(const SgGameObject&) = delete;
+		SgGameObject(SgGameObject&&) = default;
+		SgGameObject& operator=(SgGameObject&&) = default;
 
 		id_t getId() const { return id; }
 
-		std::shared_ptr<LveModel> model{};
+		std::shared_ptr<SgModel> model{};
 		glm::vec3 color{};
 		TransformComponent transform{};
 
 	private:
-		LveGameObject(id_t objectId) : id(objectId) {}
+		SgGameObject(id_t objectId) : id(objectId) {}
 
 		id_t id;
 	};

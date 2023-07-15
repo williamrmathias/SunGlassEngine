@@ -10,21 +10,21 @@
 #include <stdexcept>
 #include <array>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
 	struct SimplePushConstantData {
 		glm::mat4 modelMatrix{ 1.0f }; // identity
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	SimpleRenderSystem::SimpleRenderSystem(LveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
-		: lveDevice{ device } {
+	SimpleRenderSystem::SimpleRenderSystem(SgDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
+		: sgDevice{ device } {
 		createPipelineLayout(globalSetLayout);
 		createPipeline(renderPass);
 	}
 
 	SimpleRenderSystem::~SimpleRenderSystem() {
-		vkDestroyPipelineLayout(lveDevice.device(), pipelineLayout, nullptr);
+		vkDestroyPipelineLayout(sgDevice.device(), pipelineLayout, nullptr);
 	}
 
 	void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
@@ -45,7 +45,7 @@ namespace LittleVulkanEngine {
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		if (vkCreatePipelineLayout(
-			lveDevice.device(),
+			sgDevice.device(),
 			&pipelineLayoutInfo,
 			nullptr,
 			&pipelineLayout) != VK_SUCCESS) {
@@ -58,11 +58,11 @@ namespace LittleVulkanEngine {
 
 		// use width and height from swap chain, not window
 		PipelineConfigInfo pipelineConfig{};
-		LvePipeline::defaultPipelineConfigInfo(pipelineConfig);
+		SgPipeline::defaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = pipelineLayout;
-		lvePipeline = std::make_unique<LvePipeline>(
-			lveDevice,
+		sgPipeline = std::make_unique<SgPipeline>(
+			sgDevice,
 			"shaders/SimpleShader.vert.spv",
 			"shaders/SimpleShader.frag.spv",
 			pipelineConfig);
@@ -70,10 +70,10 @@ namespace LittleVulkanEngine {
 
 	void SimpleRenderSystem::renderGameObjects(
 		FrameInfo& frameInfo,
-		std::vector<LveGameObject>& gameObjects) {
+		std::vector<SgGameObject>& gameObjects) {
 
 		// render
-		lvePipeline->bind(frameInfo.commandBuffer);
+		sgPipeline->bind(frameInfo.commandBuffer);
 
 		auto projectionView = frameInfo.camera.getProjection() *
 			frameInfo.camera.getView();
@@ -107,4 +107,4 @@ namespace LittleVulkanEngine {
 			obj.model->draw(frameInfo.commandBuffer);
 		}
 	}
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

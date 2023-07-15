@@ -1,21 +1,21 @@
 #pragma once
 
-#include "LittleVulkanEngineCamera.hpp"
-#include "LittleVulkanEngineDevice.hpp"
-#include "LittleVulkanEngineFrameInfo.hpp"
-#include "LittleVulkanEngineGameObject.hpp"
-#include "LittleVulkanEnginePipeline.hpp"
+#include "SgCamera.hpp"
+#include "SgDevice.hpp"
+#include "SgFrameInfo.hpp"
+#include "SgGameObject.hpp"
+#include "SgPipeline.hpp"
 
 
 // std
 #include <memory>
 #include <vector>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 	class SimpleRenderSystem {
 	public:
 
-		SimpleRenderSystem(LveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+		SimpleRenderSystem(SgDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 		~SimpleRenderSystem();
 
 		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -23,15 +23,15 @@ namespace LittleVulkanEngine {
 
 		void renderGameObjects(
 			FrameInfo& frameInfo,
-			std::vector<LveGameObject>& gameObjects
+			std::vector<SgGameObject>& gameObjects
 		);
 
 	private:
 		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 
-		LveDevice& lveDevice;
-		std::unique_ptr<LvePipeline> lvePipeline;
+		SgDevice& sgDevice;
+		std::unique_ptr<SgPipeline> sgPipeline;
 		VkPipelineLayout pipelineLayout;
 	};
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

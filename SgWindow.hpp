@@ -5,15 +5,15 @@
 
 #include <string>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-	class LveWindow {
+	class SgWindow {
 	public:
-		LveWindow(int widthIn, int heightIn, std::string nameIn);
-		~LveWindow();
+		SgWindow(int widthIn, int heightIn, std::string nameIn);
+		~SgWindow();
 
-		LveWindow(const LveWindow&) = delete;
-		LveWindow& operator=(const LveWindow&) = delete;
+		SgWindow(const SgWindow&) = delete;
+		SgWindow& operator=(const SgWindow&) = delete;
 
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		VkExtent2D getExtent() {

@@ -5,9 +5,9 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // depth buffer ranges from 0 to 1
 #include <glm/glm.hpp>
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
-	class LveCamera {
+	class SgCamera {
 	public:
 
 		void setOrthographicProjection(
@@ -39,4 +39,4 @@ namespace LittleVulkanEngine {
 		glm::mat4 viewMatrix{ 1.f };
 	};
 
-} // namespace LittleVulkanEngine
+} // namespace SunGlassEngine

@@ -1,6 +1,6 @@
-#include "LittleVulkanEngineGameObject.hpp"
+#include "SgGameObject.hpp"
 
-namespace LittleVulkanEngine {
+namespace SunGlassEngine {
 
     glm::mat4 TransformComponent::mat4() {
         const float c3 = glm::cos(rotation.z);
@@ -60,4 +60,4 @@ namespace LittleVulkanEngine {
         };
     }
 
-} // LittleVulkanEngine namespace
+} // SunGlassEngine namespace
