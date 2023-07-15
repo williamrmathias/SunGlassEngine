@@ -21,7 +21,9 @@ namespace SunGlassEngine {
 
 	struct GlobalUbo {
 		glm::mat4 projectionView{ 1.f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -3.f, -1.f });
+		glm::vec4 ambientLightColor{ 1.f, 1.f, 1.f, 0.02f }; // .w is intensity
+		glm::vec3 lightPosition{ -1.f };
+		alignas(16) glm::vec4 lightColor{ 1.f }; // .w is light intensity
 	};
 
 	FirstApp::FirstApp() {
@@ -68,6 +70,7 @@ namespace SunGlassEngine {
 		camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5));
 
 		auto viewerObject = SgGameObject::createGameObject();
+		viewerObject.transform.translation.z = -2.5f;
 		KeyboardMovementController cameraController{};
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -86,7 +89,7 @@ namespace SunGlassEngine {
 			);
 
 			float aspect = sgRenderer.getAspectRatio();
-			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 			
 			if (auto commandBuffer = sgRenderer.beginFrame()) {
 				int frameIndex = sgRenderer.getFrameIndex();
@@ -118,12 +121,30 @@ namespace SunGlassEngine {
 
 	void FirstApp::loadGameObjects() {
 		std::shared_ptr<SgModel> sgModel = SgModel::createModelFromFile(
+			sgDevice, "models/flat_vase.obj");
+
+		auto flatVase = SgGameObject::createGameObject();
+		flatVase.model = sgModel;
+		flatVase.transform.translation = { -0.5f, 0.5f, 0.f };
+		flatVase.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
+		gameObjects.push_back(std::move(flatVase));
+
+		sgModel = SgModel::createModelFromFile(
 			sgDevice, "models/smooth_vase.obj");
 
-		auto gameObj = SgGameObject::createGameObject();
-		gameObj.model = sgModel;
-		gameObj.transform.translation = { 0.f, 0.5f, 2.5f };
-		gameObj.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
-		gameObjects.push_back(std::move(gameObj));
+		auto smoothVase = SgGameObject::createGameObject();
+		smoothVase.model = sgModel;
+		smoothVase.transform.translation = { 0.5f, 0.5f, 0.f };
+		smoothVase.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
+		gameObjects.push_back(std::move(smoothVase));
+
+		sgModel = SgModel::createModelFromFile(
+			sgDevice, "models/quad.obj");
+
+		auto floor = SgGameObject::createGameObject();
+		floor.model = sgModel;
+		floor.transform.translation = { 0.f, 0.5f, 0.f };
+		floor.transform.scale = glm::vec3{ 3.f, 1.f, 3.f };
+		gameObjects.push_back(std::move(floor));
 	}
 } // namespace SunGlassEngine

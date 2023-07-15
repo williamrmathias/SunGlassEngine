@@ -9,7 +9,9 @@ layout(location = 0) out vec3 fragColor;
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 projectionViewMatrix;
-	vec3 directionToLight;
+	vec4 ambientLightColor; // .w = light light intensity
+	vec3 lightPosition;
+	vec4 lightColor; // .w = light intensity
 } ubo;
 
 layout(push_constant) uniform Push {
@@ -18,22 +20,22 @@ layout(push_constant) uniform Push {
 	// PUSH LIMIT = 128 bytes
 } push;
 
-// using Ambient Lighting Model
-const float AMBIENT = 0.02;
-
 void main() {
-	// convert position from model space to clip space
-	gl_Position = ubo.projectionViewMatrix * push.modelMatrix * vec4(position, 1.0);
-	
-	// convert normal from model space to world space
-	// normal has .w = 0, so only mat3 is needed
+	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
+	gl_Position = ubo.projectionViewMatrix * positionWorld;
+
 	vec3 normalWorldSpace = normalize(mat3(push.normalMatrix) * normal);
 
-	// use Diffuse Lighting Model; Lambert's Law
-	// if dot prod is < zero, the face is facing away from the light
-	float lightIntensity = AMBIENT + max(
-		dot(normalWorldSpace, ubo.directionToLight), 0.0
-	);
+	vec3 directionToLight = ubo.lightPosition - positionWorld.xyz;
+	float attenuation = 1.0 / dot(directionToLight, directionToLight); // inverse square law
 
-	fragColor = lightIntensity * color;
+	vec3 lightColor = ubo.lightColor.xyz * ubo.lightColor.w * attenuation;
+	vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+	
+	// Lambert's Law
+	vec3 diffuseLight = lightColor * max(
+		dot(normalWorldSpace, normalize(directionToLight)), 0.0);
+
+	// Diffuse + Ambient lighting model
+	fragColor = (diffuseLight + ambientLight) * color;
 }
