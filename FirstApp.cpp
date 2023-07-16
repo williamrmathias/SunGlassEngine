@@ -4,6 +4,7 @@
 #include "SgBuffer.hpp"
 #include "SgCamera.hpp"
 #include "SimpleRenderSystem.hpp"
+#include "PointLightSystem.hpp"
 
 // libs
 #define GLF_FORCE_RADIANS // angles specified in randians
@@ -20,7 +21,8 @@
 namespace SunGlassEngine {
 
 	struct GlobalUbo {
-		glm::mat4 projectionView{ 1.f };
+		glm::mat4 projection{ 1.f };
+		glm::mat4 view{ 1.f };
 		glm::vec4 ambientLightColor{ 1.f, 1.f, 1.f, 0.02f }; // .w is intensity
 		glm::vec3 lightPosition{ -1.f };
 		alignas(16) glm::vec4 lightColor{ 1.f }; // .w is light intensity
@@ -66,6 +68,11 @@ namespace SunGlassEngine {
 			sgRenderer.getSwapChainRenderPass(),
 			globalSetLayout->getDescriptorSetLayout());
 
+		PointLightSystem pointLightSystem(
+			sgDevice,
+			sgRenderer.getSwapChainRenderPass(),
+			globalSetLayout->getDescriptorSetLayout());
+
 		SgCamera camera{};
 		camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5));
 
@@ -104,13 +111,15 @@ namespace SunGlassEngine {
 
 				// update
 				GlobalUbo ubo{};
-				ubo.projectionView = camera.getProjection() * camera.getView();
+				ubo.projection = camera.getProjection();
+				ubo.view = camera.getView();
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 			
 				// render
 				sgRenderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				pointLightSystem.render(frameInfo);
 				sgRenderer.endSwapChainRenderPass(commandBuffer);
 				sgRenderer.endFrame();
 			}
