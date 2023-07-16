@@ -112,6 +112,8 @@ namespace SunGlassEngine {
 			
 				// render
 				sgRenderer.beginSwapChainRenderPass(commandBuffer);
+
+				// must render all solid objects before semit transparent objects
 				simpleRenderSystem.renderGameObjects(frameInfo);
 				pointLightSystem.render(frameInfo);
 				sgRenderer.endSwapChainRenderPass(commandBuffer);

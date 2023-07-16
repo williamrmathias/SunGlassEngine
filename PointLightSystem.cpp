@@ -8,7 +8,9 @@
 
 // std
 #include <stdexcept>
+#include <cassert>
 #include <array>
+#include <map>
 
 namespace SunGlassEngine {
 
@@ -60,6 +62,7 @@ namespace SunGlassEngine {
 		// use width and height from swap chain, not window
 		PipelineConfigInfo pipelineConfig{};
 		SgPipeline::defaultPipelineConfigInfo(pipelineConfig);
+		SgPipeline::enableAlphaBlending(pipelineConfig);
 
 		pipelineConfig.bindingDescriptions.clear();
 		pipelineConfig.attributeDescriptions.clear();
@@ -98,6 +101,18 @@ namespace SunGlassEngine {
 	}
 
 	void PointLightSystem::render(FrameInfo& frameInfo) {
+		// sort lights
+		std::map<float, SgGameObject::id_t> sorted;
+		for (auto& keyValue : frameInfo.gameObjects) {
+			auto& obj = keyValue.second;
+			if (obj.pointlight == nullptr) continue;
+
+			// get distance
+			auto offset = frameInfo.camera.getPosition() - obj.transform.translation;
+			float distance = glm::dot(offset, offset);
+
+			sorted.emplace(distance, keyValue.first);
+		}
 
 		// render
 		sgPipeline->bind(frameInfo.commandBuffer);
@@ -115,9 +130,11 @@ namespace SunGlassEngine {
 			0,
 			nullptr);
 
-		for (auto& keyValue : frameInfo.gameObjects) {
-			auto& obj = keyValue.second;
-			if (obj.pointlight == nullptr) continue;
+		// loop through lights back to front
+		for (auto iter = sorted.rbegin(); iter != sorted.rend(); ++iter) {
+
+			// use object id to find the light object
+			auto& obj = frameInfo.gameObjects.at(iter->second);
 
 			PointLightPushConstants push{};
 			push.position = glm::vec4(obj.transform.translation, 1.f);
