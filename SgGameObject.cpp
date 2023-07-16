@@ -60,4 +60,16 @@ namespace SunGlassEngine {
         };
     }
 
+    SgGameObject SgGameObject::makePointLight(
+        float intensity, float radius, glm::vec3 color) {
+
+        SgGameObject gameObj = SgGameObject::createGameObject();
+        gameObj.color = color;
+        gameObj.transform.scale.x = radius;
+        gameObj.pointlight = std::make_unique<PointLightComponent>();
+        gameObj.pointlight->lightIntensity = intensity;
+
+        return gameObj;
+    }
+
 } // SunGlassEngine namespace

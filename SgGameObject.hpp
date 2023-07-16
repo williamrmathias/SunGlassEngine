@@ -23,6 +23,10 @@ namespace SunGlassEngine {
 		glm::mat3 normalMatrix();
 	};
 
+	struct PointLightComponent {
+		float lightIntensity = 1.0f;
+	};
+
 	class SgGameObject {
 	public:
 		using id_t = unsigned int;
@@ -33,6 +37,10 @@ namespace SunGlassEngine {
 			return SgGameObject(currentId++);
 		}
 
+		static SgGameObject makePointLight(
+			float intensity = 10.f, float radius = 0.1f,
+			glm::vec3 color = glm::vec3{1.f});
+
 		SgGameObject(const SgGameObject&) = delete;
 		SgGameObject& operator=(const SgGameObject&) = delete;
 		SgGameObject(SgGameObject&&) = default;
@@ -40,9 +48,11 @@ namespace SunGlassEngine {
 
 		id_t getId() const { return id; }
 
-		std::shared_ptr<SgModel> model{};
 		glm::vec3 color{};
 		TransformComponent transform{};
+
+		std::shared_ptr<SgModel> model{};
+		std::unique_ptr<PointLightComponent> pointlight = nullptr;
 
 	private:
 		SgGameObject(id_t objectId) : id(objectId) {}

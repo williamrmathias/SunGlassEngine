@@ -6,12 +6,17 @@ layout(location = 2) in vec3 fragNormalWorld;
 
 layout (location = 0) out vec4 outColor;
 
+struct PointLight {
+    vec4 position; // .w = N/A
+    vec4 color; // .w = intensity
+};
+
 layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 projection;
 	mat4 view;
 	vec4 ambientLightColor; // .w = light light intensity
-	vec3 lightPosition;
-	vec4 lightColor; // .w = light intensity
+	PointLight pointLights[10]; // 10 = MAX_LIGHTS
+    int numLights;
 } ubo;
 
 layout(push_constant) uniform Push {
@@ -21,16 +26,18 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-	vec3 directionToLight = ubo.lightPosition - fragPositionWorld.xyz;
-	float attenuation = 1.0 / dot(directionToLight, directionToLight); // inverse square law
+	vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+	vec3 surfaceNormal = normalize(fragNormalWorld);
 
-	vec3 lightColor = ubo.lightColor.xyz * ubo.lightColor.w * attenuation;
-	vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-	
-	// Lambert's Law
-	vec3 diffuseLight = lightColor * max(
-		dot(normalize(fragNormalWorld), normalize(directionToLight)), 0.0);
+	for (int i = 0; i < ubo.numLights; i++) {
+		PointLight light = ubo.pointLights[i];
+		vec3 directionToLight = light.position.xyz - fragPositionWorld.xyz;
+		float attenuation = 1.0 / dot(directionToLight, directionToLight); // inverse square law
+		float incidentCos = max(
+			dot(surfaceNormal, normalize(directionToLight)), 0.0);
 
-	// Diffuse + Ambient lighting model
-	outColor = vec4((diffuseLight + ambientLight) * fragColor, 1.0);
+		vec3 intensity = light.color.xyz * light.color.w * attenuation;
+		diffuseLight += intensity * incidentCos;
+	}
+	outColor = vec4(diffuseLight * fragColor, 1.0);
 }
