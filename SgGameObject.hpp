@@ -27,6 +27,13 @@ namespace SunGlassEngine {
 		float lightIntensity = 1.0f;
 	};
 
+	struct WaveComponent {
+		glm::vec2 waveDirection{ 1.f, 1.f };
+		float waveNumber = 0.5; // 2 pi / wavelength
+		float waveAmplitude = 1.f;
+		float wavePhase = 0.f;
+	};
+
 	class SgGameObject {
 	public:
 		using id_t = unsigned int;
@@ -53,6 +60,7 @@ namespace SunGlassEngine {
 
 		std::shared_ptr<SgModel> model{};
 		std::unique_ptr<PointLightComponent> pointlight = nullptr;
+		std::unique_ptr<WaveComponent> wave = nullptr;
 
 	private:
 		SgGameObject(id_t objectId) : id(objectId) {}

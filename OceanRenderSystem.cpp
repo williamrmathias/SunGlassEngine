@@ -1,4 +1,4 @@
-#include "SimpleRenderSystem.hpp"
+#include "OceanRenderSystem.hpp"
 
 // libs
 #define GLF_FORCE_RADIANS // angles specified in randians
@@ -17,17 +17,17 @@ namespace SunGlassEngine {
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	SimpleRenderSystem::SimpleRenderSystem(SgDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
+	OceanRenderSystem::OceanRenderSystem(SgDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
 		: sgDevice{ device } {
 		createPipelineLayout(globalSetLayout);
 		createPipeline(renderPass);
 	}
 
-	SimpleRenderSystem::~SimpleRenderSystem() {
+	OceanRenderSystem::~OceanRenderSystem() {
 		vkDestroyPipelineLayout(sgDevice.device(), pipelineLayout, nullptr);
 	}
 
-	void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+	void OceanRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 
 		VkPushConstantRange pushConstantRange{};
 		// use in both vertex and fragment shader
@@ -53,7 +53,7 @@ namespace SunGlassEngine {
 		}
 	};
 
-	void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void OceanRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		// use width and height from swap chain, not window
@@ -63,12 +63,38 @@ namespace SunGlassEngine {
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		sgPipeline = std::make_unique<SgPipeline>(
 			sgDevice,
-			"shaders/SimpleShader.vert.spv",
-			"shaders/SimpleShader.frag.spv",
+			"shaders/OceanShader.vert.spv",
+			"shaders/OceanShader.frag.spv",
 			pipelineConfig);
 	}
 
-	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo) {
+	void OceanRenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo) {
+		int waveIndex = 0;
+		for (auto& keyValue : frameInfo.gameObjects) {
+			auto& obj = keyValue.second;
+			if (obj.wave == nullptr) continue;
+
+			assert(waveIndex < MAX_WAVES && "Number of waves exceed maximum");
+
+			// Calculate frequency
+			float waveFrequency = glm::sqrt(9.8 * obj.wave->waveNumber);
+
+			// update phase
+			float phase = glm::mod(
+				obj.wave->wavePhase + waveFrequency * frameInfo.frameTime,
+				glm::two_pi<float>());
+
+			obj.wave->wavePhase = phase;
+
+			ubo.waves[waveIndex].waveVector = obj.wave->waveDirection * obj.wave->waveNumber;
+			ubo.waves[waveIndex].amplitude = obj.wave->waveAmplitude;
+			ubo.waves[waveIndex].phase = obj.wave->wavePhase;
+			waveIndex += 1;
+		}
+		ubo.numWaves = waveIndex;
+	}
+
+	void OceanRenderSystem::render(FrameInfo& frameInfo) {
 
 		// render
 		sgPipeline->bind(frameInfo.commandBuffer);
