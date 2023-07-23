@@ -3,3 +3,6 @@ C:\VulkanSDK\1.3.250.1\Bin\glslc.exe shaders\SimpleShader.frag -o shaders\Simple
 
 C:\VulkanSDK\1.3.250.1\Bin\glslc.exe shaders\PointLight.vert -o shaders\PointLight.vert.spv
 C:\VulkanSDK\1.3.250.1\Bin\glslc.exe shaders\PointLight.frag -o shaders\PointLight.frag.spv
+
+C:\VulkanSDK\1.3.250.1\Bin\glslc.exe shaders\Ocean.vert -o shaders\Ocean.vert.spv
+C:\VulkanSDK\1.3.250.1\Bin\glslc.exe shaders\Ocean.frag -o shaders\Ocean.frag.spv

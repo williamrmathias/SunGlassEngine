@@ -63,8 +63,8 @@ namespace SunGlassEngine {
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		sgPipeline = std::make_unique<SgPipeline>(
 			sgDevice,
-			"shaders/OceanShader.vert.spv",
-			"shaders/OceanShader.frag.spv",
+			"shaders/Ocean.vert.spv",
+			"shaders/Ocean.frag.spv",
 			pipelineConfig);
 	}
 
@@ -115,7 +115,7 @@ namespace SunGlassEngine {
 		for (auto& keyValue : frameInfo.gameObjects) {
 			auto& obj = keyValue.second;
 
-			if (obj.model == nullptr) continue;
+			if (obj.model == nullptr || obj.wave == nullptr) continue;
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();

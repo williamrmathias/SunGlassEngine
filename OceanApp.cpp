@@ -5,6 +5,7 @@
 #include "SgCamera.hpp"
 #include "SimpleRenderSystem.hpp"
 #include "PointLightSystem.hpp"
+#include "OceanRenderSystem.hpp"
 
 // libs
 #define GLF_FORCE_RADIANS // angles specified in randians
@@ -65,6 +66,11 @@ namespace SunGlassEngine {
 			sgRenderer.getSwapChainRenderPass(),
 			globalSetLayout->getDescriptorSetLayout());
 
+		OceanRenderSystem oceanRenderSystem(
+			sgDevice,
+			sgRenderer.getSwapChainRenderPass(),
+			globalSetLayout->getDescriptorSetLayout());
+
 		SgCamera camera{};
 		camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5));
 
@@ -106,6 +112,7 @@ namespace SunGlassEngine {
 				ubo.projection = camera.getProjection();
 				ubo.view = camera.getView();
 				ubo.inverseView = camera.getInverseView();
+				oceanRenderSystem.update(frameInfo, ubo);
 				pointLightSystem.update(frameInfo, ubo);
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
@@ -115,6 +122,7 @@ namespace SunGlassEngine {
 
 				// must render all solid objects before semi transparent objects
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				oceanRenderSystem.render(frameInfo);
 				pointLightSystem.render(frameInfo);
 				sgRenderer.endSwapChainRenderPass(commandBuffer);
 				sgRenderer.endFrame();
@@ -126,23 +134,15 @@ namespace SunGlassEngine {
 	}
 
 	void OceanApp::loadGameObjects() {
+
 		std::shared_ptr<SgModel> sgModel = SgModel::createModelFromFile(
-			sgDevice, "models/flat_vase.obj");
-
-		auto flatVase = SgGameObject::createGameObject();
-		flatVase.model = sgModel;
-		flatVase.transform.translation = { -0.5f, 0.5f, 0.f };
-		flatVase.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
-		gameObjects.emplace(flatVase.getId(), std::move(flatVase));
-
-		sgModel = SgModel::createModelFromFile(
-			sgDevice, "models/smooth_vase.obj");
-
-		auto smoothVase = SgGameObject::createGameObject();
-		smoothVase.model = sgModel;
-		smoothVase.transform.translation = { 0.5f, 0.5f, 0.f };
-		smoothVase.transform.scale = glm::vec3{ 3.f, 1.5, 3.f };
-		gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+			sgDevice, "models/grid64.obj");
+		auto ocean = SgGameObject::createGameObject();
+		ocean.model = sgModel;
+		ocean.transform.translation = { 0.5f, 0.5f, 0.f };
+		ocean.transform.scale = glm::vec3{ 0.1f, 0.1f, 0.1f };
+		ocean.wave = std::make_unique<WaveComponent>();
+		gameObjects.emplace(ocean.getId(), std::move(ocean));
 	}
 
 } // namespace SunGlassEngine

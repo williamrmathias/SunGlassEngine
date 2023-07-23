@@ -1,4 +1,5 @@
 #include "FirstApp.hpp"
+#include "OceanApp.hpp"
 
 // std
 #include <cstdlib>
@@ -6,7 +7,7 @@
 #include <stdexcept>
 
 int main() {
-	SunGlassEngine::FirstApp app{};
+	SunGlassEngine::OceanApp app{};
 
 	try {
 		app.run();
