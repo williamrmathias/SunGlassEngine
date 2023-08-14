@@ -27,9 +27,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	vec4 ambientLightColor; // .w = light light intensity
 
 	PointLight pointLights[10]; // 10 = MAX_LIGHTS
-    int numLights;
-
     Wave waves[3]; // 3 = MAX_WAVES
+
+    int numLights;
     int numWaves;
 } ubo;
 
@@ -39,10 +39,10 @@ layout(push_constant) uniform Push {
 	// PUSH LIMIT = 128 bytes
 } push;
 
-vec4 gersterDisplace(vec4 positionWorld) {
+vec4 gersterDisplace(vec4 positionWorld, int numWaves) {
     vec2 xz = {0.f, 0.f};
     float y = 0.f;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < numWaves; i++) {
         float theta = dot(ubo.waves[i].waveVector, positionWorld.xz) - ubo.waves[i].phase;
 
         xz += normalize(ubo.waves[i].waveVector) * ubo.waves[i].amplitude * sin(theta);
@@ -53,10 +53,11 @@ vec4 gersterDisplace(vec4 positionWorld) {
 }
 
 void main() {
-    vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
-    positionWorld += gersterDisplace(positionWorld);
+	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
+    positionWorld += gersterDisplace(positionWorld, ubo.numWaves);
+	gl_Position = ubo.projection * ubo.view * positionWorld;
 
-    fragPositionWorld = positionWorld.xyz;
-    fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
-    fragColor = color;
+	fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
+	fragPositionWorld = positionWorld.xyz;
+	fragColor = color;
 }

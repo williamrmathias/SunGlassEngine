@@ -29,9 +29,9 @@ namespace SunGlassEngine {
 		glm::vec4 ambientLightColor{ 1.f, 1.f, 1.f, 0.02f }; // .w is intensity
 
 		PointLight pointLights[MAX_LIGHTS];
-		int numLights;
-
 		Wave waves[MAX_WAVES];
+
+		int numLights;
 		int numWaves;
 	};
 

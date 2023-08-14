@@ -115,7 +115,7 @@ namespace SunGlassEngine {
 		for (auto& keyValue : frameInfo.gameObjects) {
 			auto& obj = keyValue.second;
 
-			if (obj.model == nullptr || obj.wave == nullptr) continue;
+			if (obj.wave == nullptr) continue;
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();

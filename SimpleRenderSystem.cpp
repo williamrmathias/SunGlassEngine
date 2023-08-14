@@ -90,6 +90,7 @@ namespace SunGlassEngine {
 			auto& obj = keyValue.second;
 
 			if (obj.model == nullptr) continue;
+			if (obj.wave != nullptr) continue;
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.mat4();

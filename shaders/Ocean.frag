@@ -24,9 +24,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	vec4 ambientLightColor; // .w = light light intensity
 
 	PointLight pointLights[10]; // 10 = MAX_LIGHTS
-    int numLights;
-
     Wave waves[3]; // 3 = MAX_WAVES
+
+    int numLights;
     int numWaves;
 } ubo;
 
@@ -36,7 +36,20 @@ layout(push_constant) uniform Push {
 	// PUSH LIMIT = 128 bytes
 } push;
 
-vec3 DIRECTION_TO_LIGHT = normalize(vec3(1.f, -3.f, -1.f));
+vec4 gersterDisplace(vec4 positionWorld, int numWaves) {
+    vec2 xz = {0.f, 0.f};
+    float y = 0.f;
+    for (int i = 0; i < numWaves; i++) {
+        float theta = dot(ubo.waves[i].waveVector, positionWorld.xz) - ubo.waves[i].phase;
+
+        xz += normalize(ubo.waves[i].waveVector) * ubo.waves[i].amplitude * sin(theta);
+        y += ubo.waves[i].amplitude * cos(theta);
+    }
+
+    return vec4(-xz.x, y, xz.y, 0.f);
+}
+
+vec3 DIRECTION_TO_LIGHT = normalize(vec3(1.f, 3.f, -1.f));
 
 void main() {
     vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
