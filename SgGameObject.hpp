@@ -29,8 +29,8 @@ namespace SunGlassEngine {
 
 	struct WaveComponent {
 		glm::vec2 waveDirection{ 1.f, 1.f };
-		float waveNumber = 0.5; // 2 pi / wavelength
-		float waveAmplitude = 1.f;
+		float waveNumber = 1.4f; // 2 pi / wavelength
+		float waveAmplitude = 0.5f;
 		float wavePhase = 0.f;
 	};
 
